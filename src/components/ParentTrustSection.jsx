@@ -3,10 +3,11 @@ import { motion } from 'framer-motion';
 
 export default function ParentTrustSection() {
   const points = [
-    'Data-backed guidance',
-    'Real student outcomes',
-    'No random counselling',
-    'Transparent advice',
+    'Budget-aware guidance',
+    'No fake promises',
+    'Senior-based support',
+    'Risk-based shortlisting',
+    'Clear explanation for parents'
   ];
 
   return (

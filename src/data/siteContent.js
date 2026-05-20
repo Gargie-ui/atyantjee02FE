@@ -69,32 +69,46 @@ export const pillars = [
 
 export const pricingPlans = _override?.pricingPlans ?? [
   {
-    title: 'Better College',
+    title: 'Free WhatsApp Rank Check',
+    price: 'Free',
+    features: ['Basic college probability', 'Quick chat reply', 'No commitment'],
+    cta: 'Check Rank',
+    highlighted: false,
+  },
+  {
+    title: 'Better College Plan',
     price: '149',
     features: ['College comparison', 'Hidden truths', 'Placement reality', 'Best fit by rank'],
     cta: 'Choose Plan',
     highlighted: false,
   },
   {
-    title: 'Better Branch',
+    title: 'Better Branch Plan',
     price: '149',
     features: ['CSE vs IT vs ENTC etc', 'Career future', 'Difficulty reality', 'Regret prevention'],
     cta: 'Choose Plan',
     highlighted: false,
   },
   {
-    title: 'Combo Pack',
+    title: 'Decision Bundle',
     price: '249',
-    features: ['Everything in Better College', 'Everything in Better Branch', 'Best value', 'Most complete clarity'],
-    cta: 'Get Both',
+    features: ['Everything in Better College & Branch', 'Best value', 'Most complete clarity'],
+    cta: 'Get Bundle',
     highlighted: true,
     badge: 'Most Popular',
   },
   {
-    title: '1:1 Personal Guidance',
+    title: 'Senior Review Call',
+    price: '299',
+    features: ['1-on-1 voice call', 'Direct senior insights', 'Detailed doubt clearing'],
+    cta: 'Book Call',
+    highlighted: false,
+  },
+  {
+    title: 'Premium Choice Plan',
     price: '999',
-    features: ['60 min personal consultation', 'Custom decision support', 'Parent-friendly guidance', 'Priority follow-up'],
-    cta: 'Book Session',
+    features: ['Full preference list creation', 'Parent-friendly guidance', 'Priority follow-up'],
+    cta: 'Get Premium',
     highlighted: false,
   },
 ];
@@ -152,7 +166,7 @@ export const freeGroupBullets = _override?.freeGroupBullets ?? [
 
 export const footerLinks = _override?.footerLinks ?? [
   { label: 'Instagram', href: 'https://instagram.com' },
-  { label: 'WhatsApp', href: 'https://chat.whatsapp.com/F3qcw7JZRIK5vbPgvUfaOA?mode=gi_t', title: 'All of you can join Atyant community' },
-  { label: 'Contact', href: '#', title: 'Aryan Patidar - 62628 55885' },
+  { label: 'WhatsApp', href: 'https://wa.me/917286857290', title: 'All of you can join Atyant community' },
+  { label: 'Contact', href: '#', title: 'Atyant Support - 917286857290' },
   { label: 'Privacy Policy', href: '#' },
 ];
