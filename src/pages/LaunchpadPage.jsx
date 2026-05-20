@@ -4,12 +4,8 @@ import Hero from '../components/Hero';
 import ParticleClusterBackground from '../components/ParticleClusterBackground';
 import DecisionEngine from '../components/DecisionEngine';
 import RegretSection from '../components/RegretSection';
-import DecisionTool from '../components/DecisionTool';
 import WhatNobody from '../components/WhatNobody';
-import QuickConfusionSelector from '../components/QuickConfusionSelector';
-import ClarityForm from '../components/ClarityForm';
-import ClarityResult from '../components/ClarityResult';
-import ComparisonTool from '../components/ComparisonTool';
+import ComparisonSection from '../components/ComparisonSection';
 import AtyantFramework from '../components/AtyantFramework';
 import TrustMetrics from '../components/TrustMetrics';
 import PricingCard from '../components/PricingCard';
@@ -19,7 +15,6 @@ import {
   faqItems,
   freeGroupBullets,
   howItWorksSteps,
-  painPoints,
   pillars,
   pricingPlans,
   testimonials,
@@ -30,33 +25,10 @@ const sectionVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: 'easeOut' } },
 };
 
-function PainSection() {
-  return (
-    <motion.section id="pain" className="bg-[#f6f7fb] px-4 py-20 sm:px-6 lg:px-8" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}>
-      <div className="mx-auto max-w-7xl">
-        <div className="max-w-2xl">
-          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FF6B2B]">Why Students Regret Their Choice</div>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-[#0B0F2E] sm:text-4xl">The wrong choice doesn't feel wrong on day one.</h2>
-          <p className="mt-4 text-base leading-8 text-slate-600">It usually feels confusing, rushed, and "good enough" until the reality of placements, branch, crowd, or location hits later.</p>
-        </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {painPoints.map((item) => {
-            const Icon = item.icon;
-            return (
-              <motion.div key={item.title} whileHover={{ y: -8, scale: 1.01 }} className="group rounded-[1.7rem] border border-slate-200 bg-white p-7 shadow-[0_20px_60px_rgba(15,23,42,0.06)] transition">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF6B2B]/10 text-[#FF6B2B] transition group-hover:bg-[#FF6B2B] group-hover:text-white">
-                  <Icon className="h-7 w-7" />
-                </div>
-                <h3 className="mt-6 text-xl font-bold text-[#0B0F2E]">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-    </motion.section>
-  );
-}
+/* REMOVED: PainSection (The generic bullets block). 
+  We are keeping RegretSection because real, quoted student stories are 10x more relatable 
+  and powerful for an engineering student audience.
+*/
 
 function SolutionSection() {
   return (
@@ -79,6 +51,62 @@ function SolutionSection() {
               </motion.div>
             );
           })}
+        </div>
+
+        <div className="mt-16 grid gap-6 lg:grid-cols-2">
+          <motion.div initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-[#0B122B] to-[#12183a] px-6 py-8 shadow-[0_40px_120px_rgba(11,15,46,0.16)] sm:px-10 sm:py-10">
+            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FFC900]">Free Community</div>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">Join 12,000+ Students in Our Community</h2>
+            <p className="mt-4 text-base leading-7 text-white/80">Get college updates, cutoff alerts, mistakes to avoid, and real senior Q&A — all in our exclusive group.</p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {freeGroupBullets.map((bullet) => (
+                <motion.div key={bullet} whileHover={{ x: 6 }} className="flex items-center gap-3 rounded-xl bg-white/6 px-4 py-3">
+                  <div className="h-7 w-7 flex items-center justify-center rounded-full bg-[#FF6B2B] text-white font-bold">✓</div>
+                  <div className="text-sm text-white">{bullet}</div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex justify-center">
+              <a href="https://chat.whatsapp.com/F3qcw7JZRIK5vbPgvUfaOA?mode=gi_t" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-full bg-gradient-to-br from-[#FF6B2B] to-[#ff8a57] px-6 py-3 text-sm font-semibold text-white shadow-2xl transition hover:scale-[1.03]">
+                Join Free Group
+              </a>
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, x: 10 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="rounded-[1.6rem] border border-white/10 bg-white/5 p-8 flex flex-col h-full">
+            <div>
+              <h3 className="text-4xl font-black text-white">🛡️ Why Parents Trust Atyant</h3>
+              <p className="mt-3 text-base text-white/80 font-medium">Practical, evidence-backed guidance that parents can rely on.</p>
+            </div>
+
+            <div className="mt-8 space-y-6 flex-1">
+              <motion.div whileHover={{ x: 6 }} className="flex items-start gap-4">
+                <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B] flex-shrink-0"></div>
+                <div>
+                  <p className="text-lg font-bold text-white">100% Honest Feedback</p>
+                  <p className="text-sm text-white/70 mt-2">No sugar-coating. Real insights from real seniors.</p>
+                </div>
+              </motion.div>
+
+              <motion.div whileHover={{ x: 6 }} className="flex items-start gap-4">
+                <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B] flex-shrink-0"></div>
+                <div>
+                  <p className="text-lg font-bold text-white">Data-Backed Placement Truth</p>
+                  <p className="text-sm text-white/70 mt-2">College outcomes verified from 100+ colleges.</p>
+                </div>
+              </motion.div>
+
+              <motion.div whileHover={{ x: 6 }} className="flex items-start gap-4">
+                <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B] flex-shrink-0"></div>
+                <div>
+                  <p className="text-lg font-bold text-white">Personalized For Your Kid</p>
+                  <p className="text-sm text-white/70 mt-2">Not generic advice. Your situation matters.</p>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </motion.section>
@@ -159,66 +187,6 @@ function FreeGroupSection() {
           </div>
         </motion.div>
       </motion.section>
-
-      <motion.section className="bg-[#f6f7fb] px-4 py-12 sm:px-6 lg:px-8" variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}>
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <motion.div initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-[#0B122B] to-[#12183a] px-6 py-8 shadow-[0_40px_120px_rgba(11,15,46,0.16)] sm:px-10 sm:py-10">
-              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FFC900]">Free Community</div>
-              <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">Join 12,000+ Students in Our Community</h2>
-              <p className="mt-4 text-base leading-7 text-white/80">Get college updates, cutoff alerts, mistakes to avoid, and real senior Q&A — all in our exclusive group.</p>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {freeGroupBullets.map((bullet) => (
-                  <motion.div key={bullet} whileHover={{ x: 6 }} className="flex items-center gap-3 rounded-xl bg-white/6 px-4 py-3">
-                    <div className="h-7 w-7 flex items-center justify-center rounded-full bg-[#FF6B2B] text-white font-bold">✓</div>
-                    <div className="text-sm text-white">{bullet}</div>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="mt-6 flex justify-center">
-                <a href="https://chat.whatsapp.com/F3qcw7JZRIK5vbPgvUfaOA?mode=gi_t" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-full bg-gradient-to-br from-[#FF6B2B] to-[#ff8a57] px-6 py-3 text-sm font-semibold text-white shadow-2xl transition hover:scale-[1.03]">
-                  Join Free Group
-                </a>
-              </div>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, x: 10 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="rounded-[1.6rem] border p-8 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.06)] flex flex-col h-full">
-              <div>
-                <h3 className="text-4xl font-black text-[#0B0F2E]">🛡️ Why Parents Trust Atyant</h3>
-                <p className="mt-3 text-base text-slate-600 font-medium">Practical, evidence-backed guidance that parents can rely on.</p>
-              </div>
-              
-              <div className="mt-8 space-y-6 flex-1">
-                <motion.div whileHover={{ x: 6 }} className="flex items-start gap-4">
-                  <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B] flex-shrink-0"></div>
-                  <div>
-                    <p className="text-lg font-bold text-slate-800">100% Honest Feedback</p>
-                    <p className="text-sm text-slate-600 mt-2">No sugar-coating. Real insights from real seniors.</p>
-                  </div>
-                </motion.div>
-                
-                <motion.div whileHover={{ x: 6 }} className="flex items-start gap-4">
-                  <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B] flex-shrink-0"></div>
-                  <div>
-                    <p className="text-lg font-bold text-slate-800">Data-Backed Placement Truth</p>
-                    <p className="text-sm text-slate-600 mt-2">College outcomes verified from 100+ colleges.</p>
-                  </div>
-                </motion.div>
-                
-                <motion.div whileHover={{ x: 6 }} className="flex items-start gap-4">
-                  <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B] flex-shrink-0"></div>
-                  <div>
-                    <p className="text-lg font-bold text-slate-800">Personalized For Your Kid</p>
-                    <p className="text-sm text-slate-600 mt-2">Not generic advice. Your situation matters.</p>
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
     </>
   );
 }
@@ -272,46 +240,15 @@ function FinalCTA() {
 }
 
 export default function LaunchpadPage({ activeTab, onTabChange }) {
-  const [clarityData, setClarityData] = useState(null);
-
-  React.useEffect(() => {
-    const data = localStorage.getItem('studentClarityData');
-    if (data) {
-      try { setClarityData(JSON.parse(data)); } catch (e) {}
-    }
-  }, []);
-
   return (
     <main>
       <Hero activeTab={activeTab} onTabChange={onTabChange} />
-      
-      <QuickConfusionSelector />
-
-      <section className="py-20 bg-slate-50 px-4 sm:px-6 lg:px-8" id="clarity-form">
-        <div className="max-w-7xl mx-auto">
-          {!clarityData ? (
-             <ClarityForm onComplete={(data) => setClarityData(data)} />
-          ) : (
-             <div className="space-y-6">
-                <ClarityResult data={clarityData} />
-                <div className="text-center mt-8">
-                  <button onClick={() => { localStorage.removeItem('studentClarityData'); setClarityData(null); }} className="text-sm font-semibold text-slate-500 hover:text-[#0B0F2E] underline transition">
-                    Retake Clarity Form
-                  </button>
-                </div>
-             </div>
-          )}
-        </div>
-      </section>
-
-      <DecisionTool />
       <TrustMetrics />
       <DecisionEngine />
       <WhatNobody />
-      <ComparisonTool />
+      <ComparisonSection />
       <AtyantFramework />
       <RegretSection />
-      <PainSection />
       <SolutionSection />
       <PricingSection />
       <StoriesSection />
