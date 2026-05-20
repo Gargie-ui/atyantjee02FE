@@ -138,24 +138,6 @@ export default function WhatsAppFloatingButton() {
         )}
       </AnimatePresence>
 
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        className="flex items-center gap-2 rounded-full bg-[#FF6B2B] px-4 py-3 text-sm font-semibold text-white shadow-2xl shadow-[#FF6B2B]/40 hover:shadow-2xl hover:shadow-[#FF6B2B]/60 transition-all duration-300"
-      >
-        <motion.div
-          animate={{ rotate: isOpen ? 0 : [0, 10, -10, 0] }}
-          transition={{ duration: 2, repeat: isOpen ? 0 : Infinity }}
-          className="flex h-6 w-6 items-center justify-center"
-        >
-          <MessageCircle className="h-5 w-5" />
-        </motion.div>
-        <span className="hidden sm:inline">Chat with us</span>
-      </motion.button>
     </div>
   );
 }
