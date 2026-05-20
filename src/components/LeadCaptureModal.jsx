@@ -32,14 +32,20 @@ export default function LeadCaptureModal({ open, onClose }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/45 px-4 py-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-4 sm:p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-        <button onClick={onClose} className="ml-auto mb-2 inline-block text-sm text-gray-500 hover:text-gray-700">Close</button>
+    <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/45 px-4 py-4">
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-4 sm:p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          aria-label="Close modal"
+          className="absolute top-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition"
+        >
+          &times;
+        </button>
 
         {!submitted ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold">Get personalised guidance</h3>
-            <p className="text-xs sm:text-sm text-gray-600">Share a few details and we'll suggest the next steps.</p>
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <h3 className="text-base sm:text-lg font-semibold text-center">Get personalised guidance</h3>
+            <p className="text-xs sm:text-sm text-gray-600 text-center">Share a few details and we'll suggest the next steps.</p>
 
             <div>
               <label className="mb-1 block text-xs font-medium text-gray-700">Name</label>
@@ -62,7 +68,15 @@ export default function LeadCaptureModal({ open, onClose }) {
               />
             </div>
 
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between">
+              <a
+                href="https://chat.whatsapp.com/F3qcw7JZRIK5vbPgvUfaOA?mode=gi_t"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-[#FF6B2B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#ff7a42] transition text-center"
+              >
+                Chat with us
+              </a>
               <button type="submit" className="rounded-full bg-[#FF6B2B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#ff7a42] transition">Send</button>
             </div>
           </form>
