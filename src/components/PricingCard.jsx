@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
+import { getWhatsAppLink } from '../utils/whatsapp';
 
 export default function PricingCard({ title, price, features, cta, highlighted = false, badge }) {
   return (
@@ -38,7 +39,7 @@ export default function PricingCard({ title, price, features, cta, highlighted =
         ))}
       </div>
       <a
-        href="https://chat.whatsapp.com/F3qcw7JZRIK5vbPgvUfaOA?mode=gi_t"
+        href={getWhatsAppLink(title)}
         target="_blank"
         rel="noopener noreferrer"
         className={`mt-7 inline-flex w-full items-center justify-center rounded-full px-5 py-4 text-sm font-semibold transition hover:scale-[1.02] ${

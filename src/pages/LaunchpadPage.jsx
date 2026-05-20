@@ -6,7 +6,10 @@ import DecisionEngine from '../components/DecisionEngine';
 import RegretSection from '../components/RegretSection';
 import DecisionTool from '../components/DecisionTool';
 import WhatNobody from '../components/WhatNobody';
-import ComparisonSection from '../components/ComparisonSection';
+import QuickConfusionSelector from '../components/QuickConfusionSelector';
+import ClarityForm from '../components/ClarityForm';
+import ClarityResult from '../components/ClarityResult';
+import ComparisonTool from '../components/ComparisonTool';
 import AtyantFramework from '../components/AtyantFramework';
 import TrustMetrics from '../components/TrustMetrics';
 import PricingCard from '../components/PricingCard';
@@ -269,14 +272,43 @@ function FinalCTA() {
 }
 
 export default function LaunchpadPage({ activeTab, onTabChange }) {
+  const [clarityData, setClarityData] = useState(null);
+
+  React.useEffect(() => {
+    const data = localStorage.getItem('studentClarityData');
+    if (data) {
+      try { setClarityData(JSON.parse(data)); } catch (e) {}
+    }
+  }, []);
+
   return (
     <main>
       <Hero activeTab={activeTab} onTabChange={onTabChange} />
+      
+      <QuickConfusionSelector />
+
+      <section className="py-20 bg-slate-50 px-4 sm:px-6 lg:px-8" id="clarity-form">
+        <div className="max-w-7xl mx-auto">
+          {!clarityData ? (
+             <ClarityForm onComplete={(data) => setClarityData(data)} />
+          ) : (
+             <div className="space-y-6">
+                <ClarityResult data={clarityData} />
+                <div className="text-center mt-8">
+                  <button onClick={() => { localStorage.removeItem('studentClarityData'); setClarityData(null); }} className="text-sm font-semibold text-slate-500 hover:text-[#0B0F2E] underline transition">
+                    Retake Clarity Form
+                  </button>
+                </div>
+             </div>
+          )}
+        </div>
+      </section>
+
       <DecisionTool />
       <TrustMetrics />
       <DecisionEngine />
       <WhatNobody />
-      <ComparisonSection />
+      <ComparisonTool />
       <AtyantFramework />
       <RegretSection />
       <PainSection />
