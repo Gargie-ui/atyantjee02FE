@@ -11,11 +11,11 @@ const sectionVariants = {
 };
 
 const cards = [
-  { title: 'Internships', icon: Briefcase, text: 'Find real opportunities while you study.', bgColor: 'bg-indigo-600' },
-  { title: 'Mentorship', icon: Users, text: 'Get guidance from people already ahead of you.', bgColor: 'bg-purple-600' },
-  { title: 'Resume Help', icon: FileText, text: 'Build a profile that looks serious and ready.', bgColor: 'bg-amber-600' },
-  { title: 'Roadmaps', icon: Target, text: 'See the next step instead of guessing your path.', bgColor: 'bg-emerald-600' },
-  { title: 'Skill Growth', icon: Rocket, text: 'Grow with projects, habits, and smart upskilling.', bgColor: 'bg-rose-600' },
+  { title: 'Internships', icon: Briefcase, text: 'Find real opportunities while you study.' },
+  { title: 'Mentorship', icon: Users, text: 'Get guidance from people already ahead of you.' },
+  { title: 'Resume Help', icon: FileText, text: 'Build a profile that looks serious and ready.' },
+  { title: 'Roadmaps', icon: Target, text: 'See the next step instead of guessing your path.' },
+  { title: 'Skill Growth', icon: Rocket, text: 'Grow with projects, habits, and smart upskilling.' },
 ];
 
 export default function CollegePage({ activeTab, onTabChange }) {
@@ -93,7 +93,11 @@ export default function CollegePage({ activeTab, onTabChange }) {
             {cards.map((card) => {
               const Icon = card.icon;
               return (
-                <motion.div key={card.title} whileHover={{ y: -8, scale: 1.01 }} className="group rounded-[1.7rem] border border-[#1E5BBF]/30 bg-[#1E5BBF] p-7 shadow-[0_20px_60px_rgba(15,23,42,0.06)] transition">
+                <motion.div 
+                  key={card.title} 
+                  whileHover={{ y: -8, scale: 1.01 }} 
+                  className="group rounded-[1.7rem] border border-white/10 bg-[#0B0F2E] p-7 shadow-[0_20px_60px_rgba(11,15,46,0.15)] transition"
+                >
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF6B2B]/10 text-[#FF6B2B] transition group-hover:bg-[#FF6B2B] group-hover:text-white">
                     <Icon className="h-7 w-7" />
                   </div>
