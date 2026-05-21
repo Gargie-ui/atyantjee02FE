@@ -11,11 +11,11 @@ const sectionVariants = {
 };
 
 const cards = [
-  { title: 'Internships', icon: Briefcase, text: 'Find real opportunities while you study.' },
-  { title: 'Mentorship', icon: Users, text: 'Get guidance from people already ahead of you.' },
-  { title: 'Resume Help', icon: FileText, text: 'Build a profile that looks serious and ready.' },
-  { title: 'Roadmaps', icon: Target, text: 'See the next step instead of guessing your path.' },
-  { title: 'Skill Growth', icon: Rocket, text: 'Grow with projects, habits, and smart upskilling.' },
+  { title: 'Internships', icon: Briefcase, text: 'Find real opportunities while you study.', bgColor: 'bg-indigo-600' },
+  { title: 'Mentorship', icon: Users, text: 'Get guidance from people already ahead of you.', bgColor: 'bg-purple-600' },
+  { title: 'Resume Help', icon: FileText, text: 'Build a profile that looks serious and ready.', bgColor: 'bg-amber-600' },
+  { title: 'Roadmaps', icon: Target, text: 'See the next step instead of guessing your path.', bgColor: 'bg-emerald-600' },
+  { title: 'Skill Growth', icon: Rocket, text: 'Grow with projects, habits, and smart upskilling.', bgColor: 'bg-rose-600' },
 ];
 
 export default function CollegePage({ activeTab, onTabChange }) {
