@@ -10,9 +10,9 @@ const regretStories = [
     borderColor: 'border-red-500/30',
   },
   {
-    title: 'Chose college blindly after rank',
+    title: 'Choose college blindly after rank',
     description: 'Got rank 45k, chose XYZ college just because it was in the merit list. Placement was poor, campus was bad, regretted every semester.',
-    color: 'from-orange-500/20 to-red-500/20',
+    color: 'from-amber-500/20 to-red-500/20',
     borderColor: 'border-amber-500/30',
   },
   {
