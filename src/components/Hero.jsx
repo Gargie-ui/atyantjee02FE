@@ -4,8 +4,10 @@ import {
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Hero({ activeTab, onTabChange }) {
+  const navigate = useNavigate();
   return (
     <div className="relative overflow-hidden bg-[#0B0F2E] text-white">
       {/* Background Effects */}
@@ -59,11 +61,7 @@ export default function Hero({ activeTab, onTabChange }) {
             {/* Buttons */}
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <button
-                onClick={() =>
-                  window.dispatchEvent(
-                    new CustomEvent('openLeadModal')
-                  )
-                }
+                onClick={() => navigate('/mentors')}
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FF6B2B] px-7 py-4 text-sm font-semibold text-white shadow-2xl shadow-[#FF6B2B]/30 transition duration-300 hover:bg-[#ff7a42] hover:text-white hover:shadow-[0_0_24px_rgba(255,107,43,0.45)] hover:scale-105"
               >
                 Find my mentor
