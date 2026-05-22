@@ -8,10 +8,11 @@ export default function ParticleClusterBackground({
 }) {
   const [particles, setParticles] = useState([]);
 
-  const palette =
+  const palette = useMemo(() => (
     variant === 'dark'
       ? ['#FF6B2B', '#8B5CF6', '#60A5FA', '#FFFFFF']
-      : ['#1E293B', '#7C3AED', '#F97316', '#0F172A'];
+      : ['#1E293B', '#7C3AED', '#F97316', '#0F172A']
+  ), [variant]);
 
   const opacityMap = {
     subtle: 0.5,

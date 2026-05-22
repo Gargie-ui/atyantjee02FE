@@ -5,13 +5,6 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
-const journeyTabs = [
-  { id: 'after12th', label: 'After 12th 🔥' },
-  { id: 'college', label: 'College Student 🚀' },
-  { id: 'finalyear', label: 'Final Year 💼' },
-  { id: 'workingpro', label: 'Working Pro 📈' },
-];
-
 export default function Hero({ activeTab, onTabChange }) {
   return (
     <div className="relative overflow-hidden bg-[#0B0F2E] text-white">
@@ -22,27 +15,22 @@ export default function Hero({ activeTab, onTabChange }) {
 
       <section className="relative z-10 mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-24">
         <div className="grid items-center gap-16 lg:grid-cols-2">
-          
+
           {/* LEFT SECTION */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            {/* Tabs */}
-            <div className="mb-6 flex flex-wrap gap-3">
-              {journeyTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => onTabChange(tab.id)}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                    activeTab === tab.id
-                      ? 'bg-[#FF6B2B] text-white'
-                      : 'border border-white/20 bg-white/5 text-white/80 hover:bg-white/10'
-                  }`}
+            {/* Exam Pills */}
+            <div className="mb-6 flex flex-wrap gap-2.5">
+              {['JEE Main', 'JEE Advanced', 'BITSAT', 'MHT-CET', 'CSAB'].map((exam) => (
+                <span
+                  key={exam}
+                  className="rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-white/80"
                 >
-                  {tab.label}
-                </button>
+                  {exam}
+                </span>
               ))}
             </div>
 
@@ -54,19 +42,18 @@ export default function Hero({ activeTab, onTabChange }) {
 
             {/* Heading */}
             <h1 className="max-w-2xl text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">
-              Make the perfect <br />
+              JEE rank is out. <br />
 
               <span className="italic text-[#FF6B2B]">
-                Career Decision
+                Don't waste it on the wrong college.
               </span>
             </h1>
 
             {/* Description */}
             <p className="mt-6 max-w-xl text-base leading-8 text-white/70 lg:text-lg">
-              Get expert branch guidance, JoSAA/CSAB help,
-              and insights from relatable college seniors.
-              Navigate the engineering transition with the
-              community that's been there.
+              Talk to current NIT/IIT Top Collage students who filled JoSAA
+              with a rank like yours. Get your choice list right
+              before the round closes.
             </p>
 
             {/* Buttons */}
@@ -79,7 +66,7 @@ export default function Hero({ activeTab, onTabChange }) {
                 }
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FF6B2B] px-7 py-4 text-sm font-semibold text-white shadow-2xl shadow-[#FF6B2B]/30 transition duration-300 hover:bg-[#ff7a42] hover:text-white hover:shadow-[0_0_24px_rgba(255,107,43,0.45)] hover:scale-105"
               >
-                Get Started
+                Find my mentor
                 <ArrowRight className="h-4 w-4" />
               </button>
 
@@ -87,7 +74,7 @@ export default function Hero({ activeTab, onTabChange }) {
                 href="#pricing"
                 className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white px-7 py-4 text-sm font-semibold text-[#0B0F2E] shadow-xl shadow-[#FF6B2B]/10 transition duration-300 hover:bg-[#FF6B2B] hover:text-white hover:shadow-[0_0_24px_rgba(255,107,43,0.45)] hover:scale-105"
               >
-                Explore Plans
+                See counselling plans
               </a>
             </div>
           </motion.div>
@@ -100,7 +87,7 @@ export default function Hero({ activeTab, onTabChange }) {
             className="relative hidden lg:flex items-center justify-center"
           >
             <div className="relative h-[520px] w-full max-w-[520px]">
-              
+
               {/* Main Dashboard Card */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
@@ -182,7 +169,7 @@ export default function Hero({ activeTab, onTabChange }) {
 
                   <div>
                     <h4 className="font-semibold">
-                      AI Mentor
+                      Real Mentors
                     </h4>
 
                     <p className="text-xs text-white/50">

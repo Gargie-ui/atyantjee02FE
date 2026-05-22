@@ -1,20 +1,22 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LeadCaptureModal from './components/LeadCaptureModal';
-import ChatWidget from './components/ChatWidget';
 import AdminPanel from './components/AdminPanel';
 import LaunchpadPage from './pages/LaunchpadPage';
 import CollegePage from './pages/CollegePage';
 import FinalYearPage from './pages/FinalYearPage';
 import WorkingProPage from './pages/WorkingProPage';
+import MentorsPage from './pages/MentorsPage';
 import WhatsAppFloatingButton from './components/WhatsAppFloatingButton';
 
-export default function App() {
-  const [activeTab, setActiveTab] = React.useState('after12th');
+function AppContent() {
   const [showLeadModal, setShowLeadModal] = React.useState(false);
   const [showAdmin, setShowAdmin] = React.useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     function openHandler() {
@@ -42,34 +44,63 @@ export default function App() {
     link.href = canonicalUrl;
   }, []);
 
-  const pageByTab = {
-    after12th: <LaunchpadPage activeTab={activeTab} onTabChange={setActiveTab} />,
-    college: <CollegePage activeTab={activeTab} onTabChange={setActiveTab} />,
-    finalyear: <FinalYearPage activeTab={activeTab} onTabChange={setActiveTab} />,
-    workingpro: <WorkingProPage activeTab={activeTab} onTabChange={setActiveTab} />,
+  const activeTab = location.pathname === '/mentors' ? 'mentors' : location.pathname === '/college' ? 'college' : location.pathname === '/finalyear' ? 'finalyear' : location.pathname === '/workingpro' ? 'workingpro' : 'after12th';
+
+  const handleTabChange = (tab) => {
+    if (tab === 'after12th') navigate('/');
+    else navigate(`/${tab}`);
   };
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-white font-sans antialiased">
-      <Navbar onLeadClick={() => setShowLeadModal(true)} />
+      <Navbar 
+        onLeadClick={() => setShowLeadModal(true)} 
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
       <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 10 }}
-          transition={{ duration: 0.3 }}
-        >
-          {pageByTab[activeTab] ?? <LaunchpadPage />}
-        </motion.div>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
+              <LaunchpadPage activeTab={activeTab} onTabChange={handleTabChange} />
+            </motion.div>
+          } />
+          <Route path="/college" element={
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
+              <CollegePage activeTab={activeTab} onTabChange={handleTabChange} />
+            </motion.div>
+          } />
+          <Route path="/finalyear" element={
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
+              <FinalYearPage activeTab={activeTab} onTabChange={handleTabChange} />
+            </motion.div>
+          } />
+          <Route path="/workingpro" element={
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
+              <WorkingProPage activeTab={activeTab} onTabChange={handleTabChange} />
+            </motion.div>
+          } />
+          <Route path="/mentors" element={
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
+              <MentorsPage />
+            </motion.div>
+          } />
+        </Routes>
       </AnimatePresence>
 
       <Footer />
       <LeadCaptureModal open={showLeadModal} onClose={() => setShowLeadModal(false)} />
-      <ChatWidget />
       <AdminPanel open={showAdmin} onClose={() => setShowAdmin(false)} />
-        <WhatsAppFloatingButton />
+      <WhatsAppFloatingButton />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }

@@ -69,46 +69,46 @@ export const pillars = [
 
 export const pricingPlans = _override?.pricingPlans ?? [
   {
-    title: 'Free WhatsApp Rank Check',
-    price: 'Free',
-    features: ['Basic college probability', 'Quick chat reply', 'No commitment'],
-    cta: 'Check Rank',
-    highlighted: false,
-  },
-  {
-    title: 'Better College Plan',
-    price: '149',
-    features: ['College comparison', 'Hidden truths', 'Placement reality', 'Best fit by rank'],
+    title: 'Better College',
+    price: '749',
+    features: ['1 counseling session (college focus)', 'Exclusive resources', 'Clear placement outlook'],
     cta: 'Choose Plan',
     highlighted: false,
   },
   {
-    title: 'Better Branch Plan',
-    price: '149',
-    features: ['CSE vs IT vs ENTC etc', 'Career future', 'Difficulty reality', 'Regret prevention'],
+    title: 'Better Branch',
+    price: '749',
+    features: ['1 counseling session (branch focus)', 'Exclusive resources', 'Regret prevention'],
     cta: 'Choose Plan',
     highlighted: false,
   },
   {
-    title: 'Decision Bundle',
-    price: '249',
-    features: ['Everything in Better College & Branch', 'Best value', 'Most complete clarity'],
-    cta: 'Get Bundle',
+    title: 'Complete Guidance',
+    price: '1,099',
+    features: ['2 counseling sessions (college + branch)', 'Exclusive resources', 'Most complete clarity'],
+    cta: 'Get Complete Guidance',
     highlighted: true,
     badge: 'Most Popular',
   },
   {
-    title: 'Senior Review Call',
+    title: 'Secured Seat',
+    price: '1,299',
+    features: ['1 counseling session', 'JoSAA/CSAB choice filling', 'Full preference list creation'],
+    cta: 'Secure Seat',
+    highlighted: false,
+  },
+  {
+    title: 'Insider Connect',
     price: '299',
-    features: ['1-on-1 voice call', 'Direct senior insights', 'Detailed doubt clearing'],
+    features: ['Up to 1hr voice call', 'Connect with IIT/NIT student', 'Direct insider info'],
     cta: 'Book Call',
     highlighted: false,
   },
   {
-    title: 'Premium Choice Plan',
-    price: '999',
-    features: ['Full preference list creation', 'Parent-friendly guidance', 'Priority follow-up'],
-    cta: 'Get Premium',
+    title: 'Backup Plan',
+    price: '499',
+    features: ['CSAB support', 'Private college guidance', 'Safety net planning'],
+    cta: 'Get Backup Plan',
     highlighted: false,
   },
 ];
@@ -128,33 +128,76 @@ export const testimonials = _override?.testimonials ?? [
   },
 ];
 
-export const faqItems = _override?.faqItems ?? [
+export const faqCategories = _override?.faqCategories ?? [
   {
-    question: 'Is this mentorship?',
-    answer: 'No. ATYANT is a decision clarity service built to help students choose a better college, branch, and path after results.',
+    category: 'What this actually is',
+    items: [
+      {
+        question: "What does Atyant's JEE counselling support include?",
+        answer: "1:1 sessions with current NIT/IIT/IIIT students who help you understand JoSAA/CSAB rounds, fill your choice list strategically, decode branch vs. college trade-offs, and avoid the mistakes most aspirants make in the 5-day window."
+      },
+      {
+        question: "Is this the same as JoSAA counselling?",
+        answer: "No. JoSAA is the official allotment process. We help you prepare for it — figuring out which colleges and branches to fill, in what order, based on your rank, category, home state, and goals."
+      },
+      {
+        question: "Do you actually fill the JoSAA form for me?",
+        answer: "No. You fill it yourself on the official JoSAA portal. We help you decide what to fill — the strategy, not the data entry."
+      }
+    ]
   },
   {
-    question: 'How do sessions happen?',
-    answer: 'After you choose a plan, we connect with you on WhatsApp and guide you through a focused decision conversation.',
+    category: 'Who needs this',
+    items: [
+      {
+        question: "My rank is X — do I need counselling support?",
+        answer: "If you're confident about your top 3 choices, maybe not. If you're staring at 80+ possible college-branch combinations and don't know how to order them, yes. Most aspirants underestimate how much one wrong choice order costs them."
+      },
+      {
+        question: "I'm in OBC/SC/ST/EWS category. Can you help with category-specific counselling?",
+        answer: "Yes. Our mentors include students from every category who went through the exact same counselling logic. Filter mentors by category match."
+      },
+      {
+        question: "I'm a girl candidate eligible for female supernumerary seats. Does that change strategy?",
+        answer: "Yes, significantly. We have mentors who used the female pool to get into better colleges than their rank suggested. Book one before locking your choice list."
+      },
+      {
+        question: "My rank is low. Should I even bother with JoSAA or go straight to private colleges?",
+        answer: "Talk to a mentor first. Many aspirants give up on JoSAA too early and miss CSAB special rounds where good colleges open up. Others waste weeks on JoSAA when their rank made it impossible from day one."
+      }
+    ]
   },
   {
-    question: 'Can parents join?',
-    answer: 'Yes. Parents are welcome and often join because the final decision usually needs family confidence too.',
-  },
-  {
-    question: 'Is it useful for rank above 1 lakh?',
-    answer: 'Yes. In fact, students in this range often need the most clarity because options feel wider and more confusing.',
-  },
-  {
-    question: 'What if I’m confused between many options?',
-    answer: 'That is exactly what we solve. We compare your options and help you narrow down what is actually best for your rank and goals.',
-  },
+    category: 'The actual decisions',
+    items: [
+      {
+        question: "How do I decide between a higher-ranked branch at a lower NIT vs. a lower-ranked branch at a top NIT?",
+        answer: "This is the single most asked question in JEE counselling. There's no formula. Talk to mentors from both paths — they'll tell you what placements, peer group, and life actually looked like."
+      },
+      {
+        question: "Is CSE everywhere worth it, or should I take core branches at better NITs?",
+        answer: "The honest answer changes every year based on placement trends. Get a current student's view, not a 2019 Quora answer."
+      },
+      {
+        question: "Should I take a branch I don't want just to get into a top NIT, hoping to switch later?",
+        answer: "Branch change rules vary by college and are getting harder every year. Don't bet on it without talking to someone who tried."
+      },
+      {
+        question: "NIT vs. IIIT vs. BITS vs. state government college — how do I compare?",
+        answer: "Each has different placement realities, fee structures, and campus life. We have mentors from all four — book whichever combination matches your shortlist."
+      },
+      {
+        question: "What's the difference between JoSAA rounds, CSAB special, and state counselling? Should I do all three?",
+        answer: "Yes, usually. But the strategy for each is different. Mentors walk you through the timeline and how to keep options open across all three."
+      }
+    ]
+  }
 ];
 
 export const howItWorksSteps = _override?.howItWorksSteps ?? [
-  { step: '1', title: 'Choose Plan', text: 'Pick the guidance level that fits your confusion.' },
-  { step: '2', title: 'Connect on WhatsApp', text: 'We reach out and start the decision conversation.' },
-  { step: '3', title: 'Get Clear Decision', text: 'Leave with a practical path and confidence.' },
+  { step: '1', title: 'Share Details', text: 'Tell us your rank + target colleges.' },
+  { step: '2', title: 'Get Matched', text: 'Get matched with a verified mentor from that exact college.' },
+  { step: '3', title: 'Book Session', text: 'Book a session. Fill your choices right.' },
 ];
 
 export const freeGroupBullets = _override?.freeGroupBullets ?? [
@@ -166,7 +209,7 @@ export const freeGroupBullets = _override?.freeGroupBullets ?? [
 
 export const footerLinks = _override?.footerLinks ?? [
   { label: 'Instagram', href: 'https://instagram.com' },
-  { label: 'WhatsApp', href: 'https://wa.me/917286857290', title: 'All of you can join Atyant community' },
-  { label: 'Contact', href: '#', title: 'Atyant Support - 917286857290' },
+  { label: 'WhatsApp', href: 'https://wa.me/919579040183', title: 'All of you can join Atyant community' },
+  { label: 'Contact', href: '#', title: 'Atyant Support - 919579040183' },
   { label: 'Privacy Policy', href: '#' },
 ];

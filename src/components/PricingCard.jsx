@@ -32,9 +32,9 @@ export default function PricingCard({ title, price, features, cta, highlighted =
       </div>
       <div className="mt-6 space-y-3">
         {features.map((feature) => (
-          <div key={feature} className={`flex items-center gap-3 text-sm ${highlighted ? 'text-white/80' : 'text-slate-700'}`}>
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-[#FF6B2B]" />
-            {feature}
+          <div key={feature} className={`flex items-start gap-3 text-sm ${highlighted ? 'text-white/80' : 'text-slate-700'}`}>
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-[#FF6B2B] mt-0.5" />
+            <span className="leading-snug">{feature}</span>
           </div>
         ))}
       </div>

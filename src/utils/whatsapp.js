@@ -1,8 +1,8 @@
-export const WHATSAPP_NUMBER = '917286857290';
+export const WHATSAPP_NUMBER = '919579040183';
 
 export function getWhatsAppLink(planName = '', customMessage = '') {
   let message = customMessage;
-  
+
   if (!message) {
     message = `Hi Atyant, I need help with college and branch decision.\n`;
     if (planName) {
