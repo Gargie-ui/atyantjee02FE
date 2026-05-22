@@ -25,127 +25,331 @@ const sectionVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: 'easeOut' } },
 };
 
-// ─── SECTION 3: How Atyant Solves It — simple 3-step process ─────────────────
+// ─── SECTION 3: How Atyant Solves It — Redesigned ─────────────────
 function HowItWorksSection() {
   return (
     <motion.section
       id="how-it-works"
-      className="bg-[#0B0F2E] px-4 py-20 text-white sm:px-6 lg:px-8"
+      className="relative overflow-hidden bg-[#F8FAFC] px-4 py-24 sm:px-6 lg:px-8"
       variants={sectionVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
     >
-      <div className="mx-auto max-w-7xl">
+
+      {/* BACKGROUND ELEMENTS */}
+      <div className="absolute inset-0 opacity-[0.03]">
+        <div className="h-full w-full bg-[radial-gradient(#0B0F2E_1px,transparent_1px)] [background-size:28px_28px]" />
+      </div>
+
+      <div className="absolute left-0 top-20 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl" />
+      <div className="absolute right-0 bottom-10 h-72 w-72 rounded-full bg-orange-200/30 blur-3xl" />
+
+      <div className="relative z-10 mx-auto max-w-7xl">
+
+        {/* HOW IT WORKS */}
         <div className="max-w-2xl">
-          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FFB38E]">How Launchpad Works</div>
-          <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Three steps to a better decision.</h2>
+
+          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FF6B2B]">
+            How Launchpad Works
+          </div>
+
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-[#0B0F2E] sm:text-5xl">
+            Three steps to a
+            <br />
+            better decision.
+          </h2>
+
         </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+
           {howItWorksSteps.map((item) => (
             <motion.div
               key={item.step}
-              whileHover={{ y: -8 }}
-              className="rounded-[1.7rem] border border-white/10 bg-white/6 p-7 backdrop-blur-xl"
+              whileHover={{
+                y: -10,
+                scale: 1.02,
+              }}
+              transition={{ duration: 0.3 }}
+              className="
+                group
+                relative
+                overflow-hidden
+                rounded-[2rem]
+                border
+                border-[#0B0F2E]/10
+                bg-white/80
+                p-8
+                shadow-[0_20px_60px_rgba(11,15,46,0.08)]
+                backdrop-blur-xl
+              "
             >
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FF6B2B] text-lg font-black text-white shadow-lg shadow-[#FF6B2B]/25">
-                {item.step}
+
+              {/* Glow */}
+              <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-orange-200/40 blur-2xl" />
+
+              <div className="relative z-10">
+
+                <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B2B] to-[#ff955f] text-lg font-black text-white shadow-xl shadow-[#FF6B2B]/30">
+                  {item.step}
+                </div>
+
+                <h3 className="mt-6 text-2xl font-black text-[#0B0F2E]">
+                  {item.title}
+                </h3>
+
+                <p className="mt-4 text-sm leading-7 text-slate-600">
+                  {item.text}
+                </p>
+
               </div>
-              <h3 className="mt-5 text-2xl font-bold">{item.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-white/72">{item.text}</p>
+
             </motion.div>
           ))}
+
         </div>
 
-        {/* Why Atyant Wins pillars */}
-        <div className="mt-16">
-          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FFB38E] mb-8">Why Atyant Launchpad Wins</div>
-          <div className="grid gap-6 md:grid-cols-4">
-            {pillars.map((pillar) => {
-              const Icon = pillar.icon;
-              return (
-                <motion.div
-                  key={pillar.title}
-                  whileHover={{ y: -8 }}
-                  className="rounded-[1.7rem] border border-white/10 bg-white/6 p-7 shadow-2xl shadow-black/20 backdrop-blur-xl"
-                >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF6B2B]/15 text-[#FFB38E]">
-                    <Icon className="h-7 w-7" />
-                  </div>
-                  <h3 className="mt-6 text-2xl font-bold">{pillar.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-white/72">{pillar.description}</p>
-                </motion.div>
-              );
-            })}
+        {/* WHY ATYANT WINS */}
+        <div className="relative mt-24 overflow-hidden rounded-[2.5rem] bg-[#0B0F2E] px-8 py-14 shadow-[0_40px_120px_rgba(11,15,46,0.3)]">
+
+          {/* Floating Orbs */}
+          <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl" />
+          <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+
+          <div className="relative z-10">
+
+            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FFB38E]">
+              Why Atyant Launchpad Wins
+            </div>
+
+            <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">
+              Built for clarity.
+              <br />
+              Designed for real outcomes.
+            </h2>
+
+            <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+
+              {pillars.map((pillar) => {
+                const Icon = pillar.icon;
+
+                return (
+                  <motion.div
+                    key={pillar.title}
+                    whileHover={{
+                      y: -10,
+                      scale: 1.02,
+                    }}
+                    className="
+                      rounded-[1.8rem]
+                      border
+                      border-white/10
+                      bg-white/5
+                      p-7
+                      backdrop-blur-xl
+                    "
+                  >
+
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF6B2B]/15 text-[#FFB38E]">
+                      <Icon className="h-7 w-7" />
+                    </div>
+
+                    <h3 className="mt-6 text-2xl font-bold text-white">
+                      {pillar.title}
+                    </h3>
+
+                    <p className="mt-3 text-sm leading-7 text-white/70">
+                      {pillar.description}
+                    </p>
+
+                  </motion.div>
+                );
+              })}
+
+            </div>
+
           </div>
+
         </div>
 
-        {/* Free community + Parents trust */}
-        <div className="mt-16 grid gap-6 lg:grid-cols-2">
+        {/* COMMUNITY + PARENTS */}
+        <div className="mt-20 grid gap-8 lg:grid-cols-2">
+
+          {/* COMMUNITY */}
           <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-[#0B122B] to-[#12183a] px-6 py-8 shadow-[0_40px_120px_rgba(11,15,46,0.16)] sm:px-10 sm:py-10"
+            className="
+              relative
+              overflow-hidden
+              rounded-[2rem]
+              bg-gradient-to-br
+              from-[#1A1B3A]
+              to-[#241E54]
+              px-8
+              py-10
+              shadow-[0_30px_90px_rgba(36,30,84,0.35)]
+            "
           >
-            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FFC900]">Free Community</div>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">Join 12,000+ Students in Our Community</h2>
-            <p className="mt-4 text-base leading-7 text-white/80">Get college updates, cutoff alerts, mistakes to avoid, and real senior Q&A — all in our exclusive group.</p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {freeGroupBullets.map((bullet) => (
-                <motion.div key={bullet} whileHover={{ x: 6 }} className="flex items-center gap-3 rounded-xl bg-white/6 px-4 py-3">
-                  <div className="h-7 w-7 flex items-center justify-center rounded-full bg-[#FF6B2B] text-white font-bold">✓</div>
-                  <div className="text-sm text-white">{bullet}</div>
-                </motion.div>
-              ))}
+
+            <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-pink-500/10 blur-3xl" />
+
+            <div className="relative z-10">
+
+              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FFC900]">
+                Free Community
+              </div>
+
+              <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                Join 12,000+ Students
+                <br />
+                In Our Community
+              </h2>
+
+              <p className="mt-4 text-base leading-7 text-white/80">
+                Get college updates, cutoff alerts, mistakes to avoid,
+                and real senior Q&A — all in our exclusive group.
+              </p>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+
+                {freeGroupBullets.map((bullet) => (
+                  <motion.div
+                    key={bullet}
+                    whileHover={{ x: 6 }}
+                    className="flex items-center gap-3 rounded-xl bg-white/8 px-4 py-3"
+                  >
+
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FF6B2B] text-sm font-bold text-white">
+                      ✓
+                    </div>
+
+                    <div className="text-sm text-white">
+                      {bullet}
+                    </div>
+
+                  </motion.div>
+                ))}
+
+              </div>
+
+              <div className="mt-8 flex justify-center">
+
+                <a
+                  href="https://chat.whatsapp.com/F3qcw7JZRIK5vbPgvUfaOA?mode=gi_t"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+                    inline-flex
+                    items-center
+                    gap-3
+                    rounded-full
+                    bg-gradient-to-br
+                    from-[#FF6B2B]
+                    to-[#ff8a57]
+                    px-7
+                    py-3
+                    text-sm
+                    font-semibold
+                    text-white
+                    shadow-2xl
+                    transition
+                    hover:scale-[1.04]
+                  "
+                >
+                  Join Free Group
+                </a>
+
+              </div>
+
             </div>
-            <div className="mt-6 flex justify-center">
-              <a
-                href="https://chat.whatsapp.com/F3qcw7JZRIK5vbPgvUfaOA?mode=gi_t"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 rounded-full bg-gradient-to-br from-[#FF6B2B] to-[#ff8a57] px-6 py-3 text-sm font-semibold text-white shadow-2xl transition hover:scale-[1.03]"
-              >
-                Join Free Group
-              </a>
-            </div>
+
           </motion.div>
 
+          {/* PARENTS TRUST */}
           <motion.div
-            initial={{ opacity: 0, x: 10 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="rounded-[1.6rem] border border-white/10 bg-white/5 p-8 flex flex-col h-full"
+            className="
+              relative
+              overflow-hidden
+              rounded-[2rem]
+              border
+              border-orange-100
+              bg-[#FFF9F5]
+              p-8
+              shadow-[0_20px_80px_rgba(255,107,43,0.08)]
+            "
           >
-            <div>
-              <h3 className="text-4xl font-black text-white">🛡️ Why Parents Trust Atyant</h3>
-              <p className="mt-3 text-base text-white/80 font-medium">Practical, evidence-backed guidance that parents can rely on.</p>
+
+            <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-orange-200/40 blur-3xl" />
+
+            <div className="relative z-10">
+
+              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FF6B2B]">
+                Parent Confidence
+              </div>
+
+              <h3 className="mt-3 text-4xl font-black text-[#0B0F2E]">
+                🛡️ Why Parents
+                <br />
+                Trust Atyant
+              </h3>
+
+              <p className="mt-4 text-base font-medium text-slate-600">
+                Practical, evidence-backed guidance that parents can rely on.
+              </p>
+
+              <div className="mt-10 space-y-7">
+
+                {[
+                  {
+                    title: '100% Honest Feedback',
+                    text: 'No sugar-coating. Real insights from real seniors.',
+                  },
+                  {
+                    title: 'Data-Backed Placement Truth',
+                    text: 'College outcomes verified from 100+ colleges.',
+                  },
+                  {
+                    title: 'Personalized For Your Kid',
+                    text: 'Not generic advice. Your situation matters.',
+                  },
+                ].map((item) => (
+                  <motion.div
+                    key={item.title}
+                    whileHover={{ x: 6 }}
+                    className="flex items-start gap-4"
+                  >
+
+                    <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B]" />
+
+                    <div>
+
+                      <p className="text-lg font-bold text-[#0B0F2E]">
+                        {item.title}
+                      </p>
+
+                      <p className="mt-2 text-sm leading-7 text-slate-600">
+                        {item.text}
+                      </p>
+
+                    </div>
+
+                  </motion.div>
+                ))}
+
+              </div>
+
             </div>
-            <div className="mt-8 space-y-6 flex-1">
-              <motion.div whileHover={{ x: 6 }} className="flex items-start gap-4">
-                <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B] flex-shrink-0"></div>
-                <div>
-                  <p className="text-lg font-bold text-white">100% Honest Feedback</p>
-                  <p className="text-sm text-white/70 mt-2">No sugar-coating. Real insights from real seniors.</p>
-                </div>
-              </motion.div>
-              <motion.div whileHover={{ x: 6 }} className="flex items-start gap-4">
-                <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B] flex-shrink-0"></div>
-                <div>
-                  <p className="text-lg font-bold text-white">Data-Backed Placement Truth</p>
-                  <p className="text-sm text-white/70 mt-2">College outcomes verified from 100+ colleges.</p>
-                </div>
-              </motion.div>
-              <motion.div whileHover={{ x: 6 }} className="flex items-start gap-4">
-                <div className="mt-1 h-3 w-3 rounded-full bg-[#FF6B2B] flex-shrink-0"></div>
-                <div>
-                  <p className="text-lg font-bold text-white">Personalized For Your Kid</p>
-                  <p className="text-sm text-white/70 mt-2">Not generic advice. Your situation matters.</p>
-                </div>
-              </motion.div>
-            </div>
+
           </motion.div>
+
         </div>
+
       </div>
     </motion.section>
   );
@@ -303,6 +507,7 @@ export default function LaunchpadPage({ activeTab, onTabChange }) {
       {/* WhatNobody = hidden truths about college decisions */}
       <RegretSection />
       <WhatNobody />
+  {/* Blue fade */}
 
       {/* Bridge: seen the mistakes, now name your specific confusion */}
       <DecisionEngine />
