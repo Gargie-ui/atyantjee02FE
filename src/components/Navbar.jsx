@@ -1,6 +1,8 @@
 import React from 'react';
 import { navLinks } from '../data/siteContent';
 
+import { GraduationCap } from 'lucide-react';
+
 export default function Navbar({ onLeadClick, activeTab, onTabChange }) {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-dark/90 backdrop-blur-xl">
@@ -9,9 +11,12 @@ export default function Navbar({ onLeadClick, activeTab, onTabChange }) {
         <div className="flex-1">
           <button 
             onClick={() => onTabChange && onTabChange('after12th')} 
-            className="inline-flex items-center gap-2 text-white outline-none"
+            className="inline-flex items-center gap-2.5 text-white outline-none group"
           >
-            <div className="text-2xl font-black tracking-tight text-[#FF6B2B]">ATYANT</div>
+            <div className="flex h-10 w-12 items-center justify-center rounded-2xl bg-[#FF6B2B] shadow-lg shadow-[#FF6B2B]/20 transition-transform group-hover:scale-105">
+              <span className="text-sm font-bold text-white tracking-tighter" style={{ fontFamily: 'system-ui, sans-serif' }}>अत्यanT</span>
+            </div>
+            <div className="text-2xl font-black tracking-tight text-white">Atyant</div>
           </button>
         </div>
 
