@@ -4,7 +4,8 @@ import { getUserMe, updateUser } from '../utils/api';
 
 const AVAILABLE_BUNDLES = [
   {
-    id: 'Quick Clarity',
+    id: 'quick-clarity',
+    name: 'Quick Clarity',
     price: 399,
     originalPrice: 799,
     discount: '50% OFF – Early Bird',
@@ -20,7 +21,8 @@ const AVAILABLE_BUNDLES = [
     mentorNote: 'You commit to 1 focused session + post-call key summary + 24hr WhatsApp availability.',
   },
   {
-    id: 'Complete Guidance',
+    id: 'complete-guidance',
+    name: 'Complete Guidance',
     price: 999,
     originalPrice: 1999,
     discount: '60% OFF – JoSAA Launch',
@@ -40,7 +42,8 @@ const AVAILABLE_BUNDLES = [
     mentorNote: 'You commit to 2 sessions + MOM/summary PDF + 3–5 day WhatsApp support + session recording.',
   },
   {
-    id: 'Dream Seat Protection™',
+    id: 'dream-seat',
+    name: 'Dream Seat Protection™',
     price: 1799,
     originalPrice: 2999,
     discount: '70% OFF – Priority Support',
@@ -90,11 +93,20 @@ export default function ProfilePage({ user, setUser }) {
         setCollege(user.college || '');
         setState(user.state || '');
         setRank(user.rank || '');
-        setBundles(user.bundles || []);
+        
+        // Map old bundle names to new IDs if they exist in DB
+        const mappedBundles = (user.bundles || []).map(b => {
+          if (b === 'Quick Clarity') return 'quick-clarity';
+          if (b === 'Complete Guidance') return 'complete-guidance';
+          if (b === 'Dream Seat Protection™') return 'dream-seat';
+          return b;
+        });
+        setBundles(mappedBundles);
+        
         setBio(user.bio || '');
       }
-    } else {
-      // Not logged in, redirect
+    } else if (!localStorage.getItem('user_token')) {
+      // Not logged in and no token exists, redirect
       navigate('/login');
     }
   }, [user, navigate]);
@@ -267,7 +279,7 @@ export default function ProfilePage({ user, setUser }) {
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-base font-black text-[#0B0F2E]">
-                                {b.icon} {b.id}
+                                {b.icon} {b.name}
                               </span>
                               {b.badge && (
                                 <span className="text-[10px] font-bold bg-[#FF6B2B] text-white px-2 py-0.5 rounded-full">
