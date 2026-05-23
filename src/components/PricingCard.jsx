@@ -1,17 +1,14 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, X } from 'lucide-react';
+import { CheckCircle2, X, Sparkles, Star } from 'lucide-react';
 import { getWhatsAppLink } from '../utils/whatsapp';
 import { createPaymentOrder, verifyPayment, getUserMe } from '../utils/api';
 
 // Map frontend plan titles → backend planId
 const PLAN_ID_MAP = {
-  'Insider Connect': 'insider',
-  'Backup Plan': 'backup',
-  'Better College': 'better-college',
-  'Better Branch': 'better-branch',
-  'Complete Guidance': 'combo',
-  'Secured Seat': '1to1',
+  'Quick Clarity': 'quick-clarity',
+  'Complete Guidance': 'complete-guidance',
+  'Dream Seat Protection™': 'dream-seat',
 };
 
 function loadRazorpay() {
@@ -39,7 +36,6 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
     if (!open) {
       setLoading(false); setError(''); setSuccess(false);
     } else {
-      // If modal opens, try to pre-fill user details if logged in
       const token = localStorage.getItem('user_token');
       if (token && !name && !email) {
         getUserMe()
@@ -61,7 +57,6 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
 
     const planId = PLAN_ID_MAP[planTitle];
     if (!planId) {
-      // Unmapped plan → redirect to WhatsApp
       window.open(getWhatsAppLink(planTitle), '_blank');
       onClose?.();
       setLoading(false);
@@ -69,14 +64,10 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
     }
 
     try {
-      // 1. Create order on backend
       const orderData = await createPaymentOrder({ planId, name, email, phone: phone || undefined });
-
-      // 2. Load Razorpay SDK
       const loaded = await loadRazorpay();
       if (!loaded) throw new Error('Could not load Razorpay. Check your internet connection.');
 
-      // 3. Open Razorpay checkout
       await new Promise((resolve, reject) => {
         const rzp = new window.Razorpay({
           key: orderData.razorpayKeyId,
@@ -216,8 +207,22 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
 
 // ─── PricingCard ───────────────────────────────────────────────────────────────
 
-export default function PricingCard({ title, price, features, cta, highlighted = false, badge }) {
+export default function PricingCard({
+  title,
+  price,
+  originalPrice,
+  discount,
+  discountLabel,
+  bestFor,
+  features,
+  bonus,
+  bonusLabel,
+  cta,
+  highlighted = false,
+  badge,
+}) {
   const [showModal, setShowModal] = React.useState(false);
+  const [showAllBonus, setShowAllBonus] = React.useState(false);
 
   const hasPlanId = Boolean(PLAN_ID_MAP[title]);
 
@@ -230,49 +235,137 @@ export default function PricingCard({ title, price, features, cta, highlighted =
     }
   }
 
+  const visibleBonus = showAllBonus ? bonus : bonus?.slice(0, 3);
+
   return (
     <>
       <motion.div
-        whileHover={{ y: -8, scale: 1.01 }}
-        className={`relative rounded-[1.8rem] border p-7 shadow-[0_24px_70px_rgba(11,15,46,0.08)] transition ${
+        whileHover={{ y: -6, scale: 1.01 }}
+        transition={{ duration: 0.22 }}
+        className={`relative flex flex-col rounded-[1.8rem] border shadow-[0_24px_70px_rgba(11,15,46,0.09)] transition ${
           highlighted
-            ? 'border-[#FF6B2B] bg-[#0B0F2E] text-white ring-4 ring-[#FF6B2B]/15'
+            ? 'border-[#FF6B2B] bg-[#0B0F2E] text-white ring-4 ring-[#FF6B2B]/20'
             : 'border-slate-200 bg-white text-[#0B0F2E]'
         }`}
       >
-        {badge ? (
-          <div className="absolute -top-3 left-6 rounded-full bg-[#FF6B2B] px-4 py-1 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-lg shadow-[#FF6B2B]/25">
+        {/* Badge */}
+        {badge && (
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#FF6B2B] px-5 py-1.5 text-xs font-black uppercase tracking-[0.15em] text-white shadow-lg shadow-[#FF6B2B]/30">
             {badge}
           </div>
-        ) : null}
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className={`text-2xl font-black ${highlighted ? 'text-white' : 'text-[#0B0F2E]'}`}>{title}</h3>
-            <p className={`mt-2 text-sm ${highlighted ? 'text-white/70' : 'text-slate-500'}`}>Best fit for students who want faster clarity.</p>
-          </div>
-          <div className={`rounded-2xl px-4 py-2 text-right ${highlighted ? 'bg-white/10' : 'bg-[#FF6B2B]/10'}`}>
-            <div className={`text-xs font-semibold uppercase tracking-[0.18em] ${highlighted ? 'text-white/60' : 'text-[#FF6B2B]'}`}>Starting at</div>
-            <div className={`text-3xl font-black ${highlighted ? 'text-white' : 'text-[#0B0F2E]'}`}>
+        )}
+
+        <div className="p-7 flex flex-col flex-1">
+
+          {/* Discount pill */}
+          {discount && (
+            <div className="flex items-center gap-2 mb-4">
+              <span className={`text-xs font-black px-3 py-1 rounded-full ${
+                highlighted ? 'bg-[#FF6B2B] text-white' : 'bg-[#FF6B2B]/10 text-[#FF6B2B]'
+              }`}>
+                {discount}
+              </span>
+              {discountLabel && (
+                <span className={`text-[11px] font-semibold ${highlighted ? 'text-white/60' : 'text-slate-500'}`}>
+                  • {discountLabel}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Title */}
+          <h3 className={`text-xl font-black leading-tight ${highlighted ? 'text-white' : 'text-[#0B0F2E]'}`}>
+            {title}
+          </h3>
+
+          {/* Pricing */}
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className={`text-4xl font-black ${highlighted ? 'text-white' : 'text-[#0B0F2E]'}`}>
               ₹{price}
-            </div>
+            </span>
+            {originalPrice && (
+              <span className={`text-lg font-semibold line-through ${highlighted ? 'text-white/40' : 'text-slate-400'}`}>
+                ₹{originalPrice}
+              </span>
+            )}
           </div>
-        </div>
-        <div className="mt-6 space-y-3">
-          {features.map((feature) => (
-            <div key={feature} className={`flex items-start gap-3 text-sm ${highlighted ? 'text-white/80' : 'text-slate-700'}`}>
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-[#FF6B2B] mt-0.5" />
-              <span className="leading-snug">{feature}</span>
+
+          {/* Best for */}
+          {bestFor && (
+            <div className={`mt-4 rounded-xl px-4 py-3 text-xs leading-relaxed font-medium border ${
+              highlighted
+                ? 'bg-white/10 border-white/15 text-white/80'
+                : 'bg-blue-50 border-blue-100 text-slate-700'
+            }`}>
+              <span className={`block text-[10px] font-black uppercase tracking-wider mb-1 ${highlighted ? 'text-[#FFB38E]' : 'text-[#FF6B2B]'}`}>
+                Best for
+              </span>
+              {bestFor}
             </div>
-          ))}
+          )}
+
+          {/* Divider */}
+          <div className={`mt-5 mb-4 h-px ${highlighted ? 'bg-white/10' : 'bg-slate-100'}`} />
+
+          {/* Features */}
+          <div className="space-y-2.5 flex-1">
+            <p className={`text-[10px] font-black uppercase tracking-wider mb-3 ${highlighted ? 'text-white/50' : 'text-slate-400'}`}>
+              What's included
+            </p>
+            {features.map((feature) => (
+              <div key={feature} className={`flex items-start gap-2.5 text-sm ${highlighted ? 'text-white/85' : 'text-slate-700'}`}>
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#FF6B2B] mt-0.5" />
+                <span className="leading-snug">{feature}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Bonus guides */}
+          {bonus && bonus.length > 0 && (
+            <div className={`mt-5 rounded-xl p-4 border ${
+              highlighted ? 'bg-white/8 border-white/12' : 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-100'
+            }`}>
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className={`h-3.5 w-3.5 ${highlighted ? 'text-[#FFB38E]' : 'text-amber-500'}`} />
+                <p className={`text-[10px] font-black uppercase tracking-wider ${highlighted ? 'text-[#FFB38E]' : 'text-amber-700'}`}>
+                  {bonusLabel || 'Bonus Guides'}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                {visibleBonus.map((item) => (
+                  <div key={item} className={`flex items-center gap-2 text-xs ${highlighted ? 'text-white/75' : 'text-slate-600'}`}>
+                    <Star className={`h-3 w-3 shrink-0 ${highlighted ? 'text-[#FFB38E]' : 'text-amber-400'} fill-current`} />
+                    {item}
+                  </div>
+                ))}
+                {bonus.length > 3 && (
+                  <button
+                    onClick={() => setShowAllBonus(v => !v)}
+                    className={`mt-1 text-[11px] font-bold underline underline-offset-2 ${highlighted ? 'text-[#FFB38E]' : 'text-amber-600'}`}
+                  >
+                    {showAllBonus ? 'Show less ↑' : `+${bonus.length - 3} more guides ↓`}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* CTA */}
+          <button
+            onClick={handleCTA}
+            className={`mt-6 inline-flex w-full items-center justify-center rounded-full px-5 py-4 text-sm font-bold transition hover:scale-[1.02] active:scale-[0.99] ${
+              highlighted
+                ? 'bg-[#FF6B2B] text-white hover:bg-[#ff7a42] shadow-xl shadow-[#FF6B2B]/30'
+                : 'bg-[#0B0F2E] text-white hover:bg-[#12183f] shadow-lg'
+            }`}
+          >
+            {cta}
+          </button>
+
+          <p className={`mt-3 text-center text-[10px] ${highlighted ? 'text-white/40' : 'text-slate-400'}`}>
+            🔒 Secure payment · Cancel anytime
+          </p>
         </div>
-        <button
-          onClick={handleCTA}
-          className={`mt-7 inline-flex w-full items-center justify-center rounded-full px-5 py-4 text-sm font-semibold transition hover:scale-[1.02] ${
-            highlighted ? 'bg-[#FF6B2B] text-white hover:bg-[#ff7a42]' : 'bg-[#0B0F2E] text-white hover:bg-[#12183f]'
-          }`}
-        >
-          {cta}
-        </button>
       </motion.div>
 
       <PaymentModal

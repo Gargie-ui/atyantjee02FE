@@ -3,10 +3,61 @@ import { useNavigate } from 'react-router-dom';
 import { getUserMe, updateUser } from '../utils/api';
 
 const AVAILABLE_BUNDLES = [
-  { id: 'Better College', price: 749, icon: '🎓', desc: '1 counseling session (college focus)' },
-  { id: 'Better Branch', price: 749, icon: '⚡', desc: '1 counseling session (branch focus)' },
-  { id: 'Complete Guidance', price: 1099, icon: '🚀', desc: '2 sessions + full clarity (Most Popular)' },
-  { id: 'Secured Seat', price: 1299, icon: '🛡️', desc: 'JoSAA/CSAB choice filling list creation' }
+  {
+    id: 'Quick Clarity',
+    price: 399,
+    originalPrice: 799,
+    discount: '50% OFF – Early Bird',
+    icon: '⚡',
+    desc: 'For students who want quick clarity on options and next steps.',
+    includes: [
+      '20–30 min focused session',
+      'One major confusion solved',
+      'Rank & options quick review',
+      'Post-call key summary',
+      '24-hour WhatsApp support',
+    ],
+    mentorNote: 'You commit to 1 focused session + post-call key summary + 24hr WhatsApp availability.',
+  },
+  {
+    id: 'Complete Guidance',
+    price: 999,
+    originalPrice: 1999,
+    discount: '60% OFF – JoSAA Launch',
+    badge: '⭐ Most Popular',
+    icon: '🚀',
+    desc: 'For students who want complete strategy, clarity & recorded guidance.',
+    includes: [
+      '2 in-depth sessions',
+      'Personalized strategy & roadmap',
+      'Branch vs college analysis',
+      'Freeze / Float guidance',
+      'WhatsApp support (3–5 days)',
+      'Session recording',
+      'MOM / Summary PDF',
+      'Resource packs & strategy sheets',
+    ],
+    mentorNote: 'You commit to 2 sessions + MOM/summary PDF + 3–5 day WhatsApp support + session recording.',
+  },
+  {
+    id: 'Dream Seat Protection™',
+    price: 1799,
+    originalPrice: 2999,
+    discount: '70% OFF – Priority Support',
+    icon: '🛡️',
+    desc: 'For students & parents who want end-to-end handholding till the final round.',
+    includes: [
+      'Everything in Complete Guidance',
+      'Round-wise JoSAA + CSAB support',
+      'Freeze / Float / Slide strategy',
+      'Parent clarity session',
+      'Final preference list review',
+      'Priority WhatsApp support',
+      'Backup & alternative pathway planning',
+      'Dedicated till final round',
+    ],
+    mentorNote: 'You commit to full JoSAA/CSAB round-wise support + parent session + priority availability till final round.',
+  },
 ];
 
 const INDIAN_STATES = [
@@ -182,38 +233,80 @@ export default function ProfilePage({ user, setUser }) {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Bundles You Offer</label>
-                <p className="text-xs text-slate-500 mb-3">Select the packages you are comfortable delivering to students.</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="block text-sm font-bold text-slate-700 mb-1">Bundles You Offer</label>
+                <p className="text-xs text-slate-500 mb-4">Select the packages you are comfortable delivering. Students will book you based on what you offer.</p>
+                <div className="space-y-4">
                   {AVAILABLE_BUNDLES.map(b => {
                     const isSelected = bundles.includes(b.id);
                     return (
                       <div
                         key={b.id}
                         onClick={() => handleBundleToggle(b.id)}
-                        className={`relative flex items-start gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${isSelected
-                          ? 'border-[#FF6B2B] bg-[#FF6B2B]/5 shadow-md shadow-[#FF6B2B]/10 scale-[1.02]'
-                          : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                          }`}
+                        className={`relative flex gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                          isSelected
+                            ? 'border-[#FF6B2B] bg-[#FF6B2B]/5 shadow-md shadow-[#FF6B2B]/10'
+                            : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
                       >
-                        <div className="flex items-center h-5 mt-1">
-                          <input
-                            type="checkbox"
-                            className="w-5 h-5 text-[#FF6B2B] border-gray-300 rounded focus:ring-[#FF6B2B]"
-                            checked={isSelected}
-                            readOnly
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="font-bold text-[#0B0F2E] flex items-center gap-2">
-                              {b.icon} {b.id}
-                            </span>
-                            <span className="text-xs font-black bg-[#0B0F2E] text-white px-2 py-0.5 rounded-md">
-                              ₹{b.price}
-                            </span>
+                        {/* Checkbox */}
+                        <div className="flex-shrink-0 pt-0.5">
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                            isSelected ? 'bg-[#FF6B2B] border-[#FF6B2B]' : 'border-slate-300'
+                          }`}>
+                            {isSelected && (
+                              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
                           </div>
-                          <p className="text-xs text-slate-500 leading-relaxed">{b.desc}</p>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          {/* Header row */}
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-base font-black text-[#0B0F2E]">
+                                {b.icon} {b.id}
+                              </span>
+                              {b.badge && (
+                                <span className="text-[10px] font-bold bg-[#FF6B2B] text-white px-2 py-0.5 rounded-full">
+                                  {b.badge}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="text-lg font-black text-[#0B0F2E]">₹{b.price}</span>
+                                {b.originalPrice && (
+                                  <span className="text-sm text-slate-400 line-through">₹{b.originalPrice}</span>
+                                )}
+                              </div>
+                              {b.discount && (
+                                <span className="text-[10px] font-bold text-[#FF6B2B]">{b.discount}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Best for */}
+                          <p className="text-xs text-slate-500 mb-3 leading-relaxed italic">{b.desc}</p>
+
+                          {/* Includes */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                            {b.includes.map(item => (
+                              <div key={item} className="flex items-start gap-1.5 text-[11px] text-slate-600">
+                                <span className="text-[#FF6B2B] mt-0.5 font-bold leading-none">✓</span>
+                                <span className="leading-snug">{item}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Your commitment note */}
+                          <div className={`mt-3 text-[11px] px-3 py-2 rounded-lg font-medium ${
+                            isSelected ? 'bg-[#FF6B2B]/10 text-[#FF6B2B]' : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            📋 {b.mentorNote}
+                          </div>
                         </div>
                       </div>
                     );

@@ -12,11 +12,11 @@ import {
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { key: 'basic',    label: 'Identity',  icon: User,         q: 'Who are you?',                    sub: 'Tell us your name and where to send your results.' },
-  { key: 'academic', label: 'Academic',  icon: GraduationCap, q: 'Your academic profile?',           sub: 'This helps us match you to the right college tier.' },
-  { key: 'interest', label: 'Interest',  icon: Zap,           q: 'What excites you most?',           sub: 'Pick the field you could see yourself working in.' },
-  { key: 'confusion',label: 'Confusion', icon: Flame,         q: "What's your biggest confusion?",   sub: 'Be honest. This is where most students get stuck.' },
-  { key: 'priority', label: 'Priority',  icon: Trophy,        q: 'What matters most to you?',       sub: 'Your answer shapes your personalized direction.' },
+  { key: 'basic', label: 'Identity', icon: User, q: 'Who are you?', sub: 'Tell us your name and where to send your results.' },
+  { key: 'academic', label: 'Academic', icon: GraduationCap, q: 'Your academic profile?', sub: 'This helps us match you to the right college tier.' },
+  { key: 'interest', label: 'Interest', icon: Zap, q: 'What excites you most?', sub: 'Pick the field you could see yourself working in.' },
+  { key: 'confusion', label: 'Confusion', icon: Flame, q: "What's your biggest confusion?", sub: 'Be honest. This is where most students get stuck.' },
+  { key: 'priority', label: 'Priority', icon: Trophy, q: 'What matters most to you?', sub: 'Your answer shapes your personalized direction.' },
 ];
 
 // Hardcoded gradient colors — bypasses Tailwind JIT scanning entirely
@@ -288,7 +288,7 @@ export default function DecisionEngine() {
                         {/* Label + collected data */}
                         <div className="pb-2 pt-1 flex-1 min-w-0">
                           <p className={`text-xs font-black mb-1 ${isCurrent ? 'text-white' : isDone ? 'text-white/80' : 'text-white/40'}`}
-                            style={{textShadow:'0 1px 3px rgba(0,0,0,0.4)'}}>
+                            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
                             {s.label}
                           </p>
 
@@ -368,7 +368,7 @@ export default function DecisionEngine() {
                       {activeStep === 1 && (
                         <div className="max-w-md space-y-5">
                           {[
-                            { label: 'Full Name', type: 'text', val: fullName, set: setFullName, ph: 'e.g. Rahul Sharma' },
+                            { label: 'Full Name', type: 'text', val: fullName, set: setFullName, ph: 'e.g. Rahul Gupta' },
                             { label: 'WhatsApp Number', type: 'tel', val: whatsapp, set: setWhatsapp, ph: '+91 XXXXX XXXXX' },
                           ].map(f => (
                             <div key={f.label} className="relative">

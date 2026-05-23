@@ -418,10 +418,16 @@ function PricingSection() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4 relative z-20">
+        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3 relative z-20">
           {pricingPlans.map((plan) => (
             <PricingCard key={plan.title} {...plan} />
           ))}
+        </div>
+
+        {/* Bottom trust line */}
+        <div className="mt-10 text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">🔥 Limited Time Early Launch Offer</p>
+          <p className="mt-2 text-base font-semibold text-slate-600">Trusted Seniors. Real Insights. Zero Regrets.</p>
         </div>
       </div>
     </motion.section>
@@ -431,7 +437,7 @@ function PricingSection() {
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 function FAQSection() {
   const [openId, setOpenId] = useState('0-0');
-  
+
   return (
     <motion.section
       id="faq"
@@ -442,7 +448,7 @@ function FAQSection() {
       viewport={{ once: true, amount: 0.2 }}
     >
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#000000_2px,transparent_2px),linear-gradient(to_bottom,#000000_2px,transparent_2px)] opacity-[0.05] bg-[size:40px_40px]" />
-      
+
       <div className="relative z-10 mx-auto max-w-7xl">
         <div className="w-full flex flex-col items-center text-center">
           <motion.div
@@ -498,7 +504,7 @@ function FinalCTA() {
           </p>
           <div className="mt-8 flex items-center justify-center">
             <a
-              href="https://chat.whatsapp.com/F3qcw7JZRIK5vbPgvUfaOA?mode=gi_t"
+              href="https://chat.whatsapp.com/EnpaX25ybPU07nC3mDe0Z5"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center rounded-full bg-[#FF6B2B] px-8 py-4 text-sm font-semibold text-white shadow-2xl shadow-[#FF6B2B]/25 transition hover:scale-[1.03] hover:bg-[#ff7a42]"

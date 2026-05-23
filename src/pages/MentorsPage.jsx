@@ -9,59 +9,38 @@ import { PaymentModal } from '../components/PricingCard';
 // ─── Bundle definitions ────────────────────────────────────────────────────
 const BUNDLES = [
   {
-    id: 'insider',
-    name: 'Insider Connect',
-    sub: 'Up to 1hr voice call',
-    price: '₹299',
+    id: 'quick-clarity',
+    name: 'Quick Clarity',
+    sub: '20–30 min focused session',
+    price: '₹399',
+    originalPrice: '₹799',
+    discount: '50% OFF',
     color: '#1D9E75',
     bg: '#E1F5EE',
-    wa: 'Hi+Atyant%2C+I+am+interested+in+Insider+Connect.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
+    wa: 'Hi+Atyant%2C+I+am+interested+in+Quick+Clarity.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
   },
   {
-    id: 'backup',
-    name: 'Backup Plan',
-    sub: 'CSAB + private college',
-    price: '₹499',
-    color: '#BA7517',
-    bg: '#FAEEDA',
-    wa: 'Hi+Atyant%2C+I+am+interested+in+Backup+Plan.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
-  },
-  {
-    id: 'college',
-    name: 'Better College',
-    sub: '1 session · college focus',
-    price: '₹749',
-    color: '#378ADD',
-    bg: '#E6F1FB',
-    wa: 'Hi+Atyant%2C+I+am+interested+in+Better+College.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+preferred+branch%3A%0AMy+main+confusion%3A%0A',
-  },
-  {
-    id: 'branch',
-    name: 'Better Branch',
-    sub: '1 session · branch focus',
-    price: '₹749',
-    color: '#378ADD',
-    bg: '#E6F1FB',
-    wa: 'Hi+Atyant%2C+I+am+interested+in+Better+Branch.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+preferred+branch%3A%0AMy+main+confusion%3A%0A',
-  },
-  {
-    id: 'complete',
+    id: 'complete-guidance',
     name: 'Complete Guidance',
-    sub: '2 sessions · college + branch',
-    price: '₹1,099',
+    sub: '2 in-depth sessions + strategy',
+    price: '₹999',
+    originalPrice: '₹1,999',
+    discount: '60% OFF',
     popular: true,
-    color: '#185FA5',
-    bg: '#E6F1FB',
+    color: '#FF6B2B',
+    bg: '#FFF3EE',
     wa: 'Hi+Atyant%2C+I+am+interested+in+Complete+Guidance.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+preferred+branch%3A%0AMy+main+confusion%3A%0A',
   },
   {
-    id: 'seat',
-    name: 'Secured Seat',
-    sub: 'JoSAA/CSAB choice filling',
-    price: '₹1,299',
+    id: 'dream-seat',
+    name: 'Dream Seat Protection™',
+    sub: 'Round-wise JoSAA + CSAB support',
+    price: '₹1,799',
+    originalPrice: '₹5,999',
+    discount: '70% OFF',
     color: '#534AB7',
     bg: '#EEEDFE',
-    wa: 'Hi+Atyant%2C+I+am+interested+in+Secured+Seat.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
+    wa: 'Hi+Atyant%2C+I+am+interested+in+Dream+Seat+Protection.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
   },
 ];
 
@@ -123,8 +102,18 @@ function BundleRow({ bundleId, isSelected, onSelect }) {
           <p className="text-[10px] text-slate-500 leading-tight">{b.sub}</p>
         </div>
       </div>
-      <div className="flex items-center gap-1">
-        <span className="text-xs font-bold text-slate-800">{b.price}</span>
+      <div className="flex flex-col items-end gap-0.5">
+        {b.originalPrice && (
+          <span className="text-[9px] text-slate-400 line-through leading-none">{b.originalPrice}</span>
+        )}
+        <div className="flex items-center gap-1">
+          <span className="text-xs font-bold text-slate-800">{b.price}</span>
+          {b.discount && (
+            <span className="text-[8px] font-bold px-1 py-0.5 rounded" style={{ backgroundColor: b.color + '22', color: b.color }}>
+              {b.discount}
+            </span>
+          )}
+        </div>
       </div>
     </button>
   );
@@ -139,7 +128,7 @@ function MentorCard({ mentor, index }) {
     return found ? found.id : null;
   }).filter(Boolean) : [];
   
-  const initialBundle = mentorBundles.includes('complete') ? 'complete' : mentorBundles[0];
+  const initialBundle = mentorBundles.includes('complete-guidance') ? 'complete-guidance' : mentorBundles[0];
   const [selectedBundle, setSelectedBundle] = useState(initialBundle);
   const [showPayment, setShowPayment] = useState(false);
   

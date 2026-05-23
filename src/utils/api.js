@@ -40,6 +40,12 @@ async function request(endpoint, options = {}) {
   return data;
 }
 
+// Helper for admin auth header
+const adminAuthHeader = () => {
+  const token = localStorage.getItem('admin_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // ─── Leads ───────────────────────────────────────────────────────────────────
 
 /**
@@ -52,16 +58,16 @@ export const createLead = (payload) =>
 /** Admin: list leads with optional filters */
 export const listLeads = (params = {}) => {
   const qs = new URLSearchParams(params).toString();
-  return request(`/api/leads${qs ? `?${qs}` : ''}`);
+  return request(`/api/leads${qs ? `?${qs}` : ''}`, { headers: adminAuthHeader() });
 };
 
 /** Admin: update lead status */
 export const updateLead = (id, data) =>
-  request(`/api/leads/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  request(`/api/leads/${id}`, { method: 'PATCH', headers: adminAuthHeader(), body: JSON.stringify(data) });
 
 /** Admin: delete lead */
 export const deleteLead = (id) =>
-  request(`/api/leads/${id}`, { method: 'DELETE' });
+  request(`/api/leads/${id}`, { method: 'DELETE', headers: adminAuthHeader() });
 
 /** Admin: export leads CSV — returns raw text, not JSON */
 export const exportLeadsCSV = async () => {
@@ -89,12 +95,12 @@ export const sendChatMessage = (payload) =>
 /** Admin: list chat sessions */
 export const listChatSessions = (params = {}) => {
   const qs = new URLSearchParams(params).toString();
-  return request(`/api/chat/sessions${qs ? `?${qs}` : ''}`);
+  return request(`/api/chat/sessions${qs ? `?${qs}` : ''}`, { headers: adminAuthHeader() });
 };
 
 /** Admin: get a single session */
 export const getChatSession = (sessionId) =>
-  request(`/api/chat/sessions/${sessionId}`);
+  request(`/api/chat/sessions/${sessionId}`, { headers: adminAuthHeader() });
 
 // ─── Decision Engine ──────────────────────────────────────────────────────────
 
@@ -133,7 +139,7 @@ export const verifyPayment = (payload) =>
 /** Admin: list payments */
 export const listPayments = (params = {}) => {
   const qs = new URLSearchParams(params).toString();
-  return request(`/api/payments${qs ? `?${qs}` : ''}`);
+  return request(`/api/payments${qs ? `?${qs}` : ''}`, { headers: adminAuthHeader() });
 };
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -152,7 +158,7 @@ export const adminLogin = async (payload) => {
 };
 
 /** Verify stored JWT + fetch current admin */
-export const getMe = () => request('/api/auth/me');
+export const getMe = () => request('/api/auth/me', { headers: adminAuthHeader() });
 
 /** Clear stored token */
 export const adminLogout = () => {
