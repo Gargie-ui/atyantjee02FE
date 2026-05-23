@@ -4,19 +4,32 @@ import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LeadCaptureModal from './components/LeadCaptureModal';
-import AdminPanel from './components/AdminPanel';
+import AtyantLoginPage from './pages/AtyantLoginPage';
 import LaunchpadPage from './pages/LaunchpadPage';
 import CollegePage from './pages/CollegePage';
 import FinalYearPage from './pages/FinalYearPage';
 import WorkingProPage from './pages/WorkingProPage';
 import MentorsPage from './pages/MentorsPage';
+import AuthPage from './pages/AuthPage';
+import ProfilePage from './pages/ProfilePage';
 import WhatsAppFloatingButton from './components/WhatsAppFloatingButton';
+import { getUserMe } from './utils/api';
 
 function AppContent() {
   const [showLeadModal, setShowLeadModal] = React.useState(false);
-  const [showAdmin, setShowAdmin] = React.useState(false);
+  const [user, setUser] = React.useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    // Try to fetch logged in user on mount
+    const token = localStorage.getItem('user_token');
+    if (token) {
+      getUserMe()
+        .then((res) => setUser(res.user))
+        .catch(() => localStorage.removeItem('user_token'));
+    }
+  }, []);
 
   React.useEffect(() => {
     function openHandler() {
@@ -57,6 +70,7 @@ function AppContent() {
         onLeadClick={() => setShowLeadModal(true)} 
         activeTab={activeTab}
         onTabChange={handleTabChange}
+        user={user}
       />
 
       <AnimatePresence mode="wait">
@@ -86,12 +100,26 @@ function AppContent() {
               <MentorsPage />
             </motion.div>
           } />
+          <Route path="/atyantlogin" element={
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
+              <AtyantLoginPage />
+            </motion.div>
+          } />
+          <Route path="/login" element={
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
+              <AuthPage setUser={setUser} />
+            </motion.div>
+          } />
+          <Route path="/profile" element={
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
+              <ProfilePage user={user} setUser={setUser} />
+            </motion.div>
+          } />
         </Routes>
       </AnimatePresence>
 
       <Footer />
       <LeadCaptureModal open={showLeadModal} onClose={() => setShowLeadModal(false)} />
-      <AdminPanel open={showAdmin} onClose={() => setShowAdmin(false)} />
       <WhatsAppFloatingButton />
     </div>
   );

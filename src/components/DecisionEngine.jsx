@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getDecision } from '../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Code, Cpu, Wrench, Briefcase,
@@ -122,6 +123,7 @@ export default function DecisionEngine() {
   const [activeStep, setActiveStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [result, setResult] = useState(null);
+  const [revealing, setRevealing] = useState(false);
 
   const [fullName, setFullName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -157,16 +159,41 @@ export default function DecisionEngine() {
     setActiveStep(s => Math.max(s - 1, 1));
   };
 
-  const buildSuggestion = () => {
+  const buildLocalSuggestion = () => {
     const rank = parseInt(rankInput, 10);
     const examData = EXAM_SUGGESTIONS[examType] || EXAM_SUGGESTIONS.default;
     const tier = rank > 0 ? (rank < 5000 ? 'top' : rank < 50000 ? 'mid' : 'low') : 'mid';
     return `${examData[tier]} Based on your interest in ${interestedBranch}, your confusion about ${confusion.toLowerCase()} and your priority of ${careerPriority.toLowerCase()}, we recommend a balanced college and branch path that keeps both fit and future growth in view.`;
   };
 
-  const handleReveal = () => {
+  // Map frontend branch IDs to backend-accepted stream enum values
+  const toStream = (branch) => {
+    if (!branch) return 'pcm';
+    if (branch.toLowerCase().includes('commerce')) return 'commerce';
+    if (branch.toLowerCase().includes('pcb') || branch.toLowerCase().includes('bio')) return 'pcb';
+    return 'pcm';
+  };
+
+  const handleReveal = async () => {
     if (!validateStep()) return;
-    setResult(buildSuggestion());
+    setRevealing(true);
+    try {
+      const data = await getDecision({
+        stream: toStream(interestedBranch),
+        rank: parseInt(rankInput, 10) || 0,
+        confusion: `${confusion} | Priority: ${careerPriority} | Exam: ${examType} | State: ${preferredState}`,
+        name: fullName || undefined,
+        // WhatsApp is used as contact identifier; backend accepts email — skip if not email-like
+      });
+      const serverText = data?.result?.direction || data?.result?.suggestion || data?.result?.message || data?.result?.text || '';
+      const nextStep = data?.result?.nextStep ? ` ${data.result.nextStep}` : '';
+      setResult((serverText + nextStep).trim() || buildLocalSuggestion());
+    } catch (err) {
+      console.warn('Decision API error, using local fallback:', err.message);
+      setResult(buildLocalSuggestion());
+    } finally {
+      setRevealing(false);
+    }
   };
 
   return (
@@ -455,10 +482,10 @@ export default function DecisionEngine() {
                 ) : (
                   <motion.button
                     whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                    type="button" onClick={handleReveal}
-                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 px-7 py-3.5 text-sm font-black text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] transition-all"
+                    type="button" onClick={handleReveal} disabled={revealing}
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 px-7 py-3.5 text-sm font-black text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] transition-all disabled:opacity-70"
                   >
-                    <Sparkles className="h-4 w-4" /> Reveal Roadmap
+                    <Sparkles className="h-4 w-4" /> {revealing ? 'Generating…' : 'Reveal Roadmap'}
                   </motion.button>
                 )}
               </div>

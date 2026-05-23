@@ -1,0 +1,203 @@
+// src/utils/api.js
+// Central API client — all requests go through here.
+// VITE_API_URL is used in production (e.g. https://api.atyant.in).
+// In dev, Vite proxies /api → http://localhost:5000 so we use '' (empty base).
+
+const API_BASE =
+  import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // strip trailing slash
+    : '';
+
+// ─── Core fetch wrapper ───────────────────────────────────────────────────────
+
+async function request(endpoint, options = {}) {
+  const url = `${API_BASE}${endpoint}`;
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  const res = await fetch(url, { ...options, headers });
+
+  // Try to parse JSON even on error so we can surface backend messages
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    data = {};
+  }
+
+  if (!res.ok) {
+    const message =
+      data?.error || data?.message || `API error ${res.status}`;
+    const err = new Error(message);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+
+  return data;
+}
+
+// ─── Leads ───────────────────────────────────────────────────────────────────
+
+/**
+ * Submit a lead (public — no auth required).
+ * @param {{ name, email, phone?, source?, stream?, rank?, confusion? }} payload
+ */
+export const createLead = (payload) =>
+  request('/api/leads', { method: 'POST', body: JSON.stringify(payload) });
+
+/** Admin: list leads with optional filters */
+export const listLeads = (params = {}) => {
+  const qs = new URLSearchParams(params).toString();
+  return request(`/api/leads${qs ? `?${qs}` : ''}`);
+};
+
+/** Admin: update lead status */
+export const updateLead = (id, data) =>
+  request(`/api/leads/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+
+/** Admin: delete lead */
+export const deleteLead = (id) =>
+  request(`/api/leads/${id}`, { method: 'DELETE' });
+
+/** Admin: export leads CSV — returns raw text, not JSON */
+export const exportLeadsCSV = async () => {
+  const url = `${API_BASE}/api/leads/export.csv`;
+  const token = localStorage.getItem('admin_token');
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`CSV export failed: ${res.status}`);
+  return res.blob();
+};
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Send a chat message to the AI backend.
+ * @param {{ message: string, sessionId?: string }} payload
+ */
+export const sendChatMessage = (payload) =>
+  request('/api/chat/message', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+/** Admin: list chat sessions */
+export const listChatSessions = (params = {}) => {
+  const qs = new URLSearchParams(params).toString();
+  return request(`/api/chat/sessions${qs ? `?${qs}` : ''}`);
+};
+
+/** Admin: get a single session */
+export const getChatSession = (sessionId) =>
+  request(`/api/chat/sessions/${sessionId}`);
+
+// ─── Decision Engine ──────────────────────────────────────────────────────────
+
+/**
+ * Get a personalized college decision from the AI engine.
+ * @param {{ stream, rank, confusion?, name?, email? }} payload
+ */
+export const getDecision = (payload) =>
+  request('/api/decision', { method: 'POST', body: JSON.stringify(payload) });
+
+// ─── Payments ─────────────────────────────────────────────────────────────────
+
+/** Fetch available plans + Razorpay key (public) */
+export const getPaymentPlans = () => request('/api/payments/plans');
+
+/**
+ * Create a Razorpay order (public).
+ * @param {{ planId, name, email, phone? }} payload
+ */
+export const createPaymentOrder = (payload) =>
+  request('/api/payments/orders', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+/**
+ * Verify a payment after Razorpay checkout (public).
+ * @param {{ razorpayOrderId, razorpayPaymentId, razorpaySignature }} payload
+ */
+export const verifyPayment = (payload) =>
+  request('/api/payments/verify', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+/** Admin: list payments */
+export const listPayments = (params = {}) => {
+  const qs = new URLSearchParams(params).toString();
+  return request(`/api/payments${qs ? `?${qs}` : ''}`);
+};
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Admin login — stores JWT in localStorage on success.
+ * @param {{ email, password }} payload
+ */
+export const adminLogin = async (payload) => {
+  const data = await request('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  if (data.token) localStorage.setItem('admin_token', data.token);
+  return data;
+};
+
+/** Verify stored JWT + fetch current admin */
+export const getMe = () => request('/api/auth/me');
+
+/** Clear stored token */
+export const adminLogout = () => {
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('user_token');
+};
+
+export const userSignup = async (payload) => {
+  const data = await request('/api/users/signup', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  if (data.token) localStorage.setItem('user_token', data.token);
+  return data;
+};
+
+export const userLogin = async (payload) => {
+  const data = await request('/api/users/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  if (data.token) localStorage.setItem('user_token', data.token);
+  return data;
+};
+
+export const getUserMe = () => {
+  const token = localStorage.getItem('user_token');
+  return request('/api/users/me', { 
+    headers: token ? { Authorization: `Bearer ${token}` } : {} 
+  });
+};
+
+export const updateUser = (payload) => {
+  const token = localStorage.getItem('user_token');
+  return request('/api/users/me', {
+    method: 'PATCH',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: JSON.stringify(payload)
+  });
+};
+
+export const getMentors = () => request('/api/users/mentors');
+
+// ─── Health ───────────────────────────────────────────────────────────────────
+
+export const healthCheck = () => request('/health');
+
+export default API_BASE;

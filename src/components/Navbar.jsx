@@ -1,9 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { navLinks } from '../data/siteContent';
 
 import { GraduationCap } from 'lucide-react';
 
-export default function Navbar({ onLeadClick, activeTab, onTabChange }) {
+export default function Navbar({ onLeadClick, activeTab, onTabChange, user }) {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-dark/90 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
@@ -45,9 +46,15 @@ export default function Navbar({ onLeadClick, activeTab, onTabChange }) {
 
         {/* Buttons - Right */}
         <div className="flex flex-1 items-center justify-end gap-3">
-          <a href="https://www.atyant.in/login" className="inline-flex items-center rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-[#FF6B2B]">
-            Login
-          </a>
+          {user ? (
+            <Link to="/profile" className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 border-2 border-slate-700 text-sm font-bold text-white transition hover:border-[#FF6B2B]">
+              {user.name.charAt(0).toUpperCase()}
+            </Link>
+          ) : (
+            <Link to="/login" className="inline-flex items-center rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-[#FF6B2B]">
+              Login
+            </Link>
+          )}
           <button
             type="button"
             onClick={onLeadClick}

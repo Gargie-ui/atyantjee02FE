@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Filter, Search, MapPin, BookOpen, Medal, Star,
   CheckCircle2, ChevronRight, Users, ExternalLink
 } from 'lucide-react';
+import { PaymentModal } from '../components/PricingCard';
 
 // ─── Bundle definitions ────────────────────────────────────────────────────
 const BUNDLES = [
@@ -66,64 +67,11 @@ const BUNDLES = [
 
 const BUNDLE_MAP = Object.fromEntries(BUNDLES.map(b => [b.id, b]));
 
+import { getMentors } from '../utils/api';
+
 // ─── Mentor data ───────────────────────────────────────────────────────────
-// bundles: array of bundle IDs this mentor offers
-const MENTORS = [
-  {
-    id: 1, name: 'Rahul Sharma', college: 'IIT Bombay', state: 'Maharashtra',
-    rank: 'AIR 450 (JEE Adv)', branch: 'Computer Science',
-    rating: 4.9, sessions: 38, year: '3rd year',
-    bundles: ['insider', 'branch', 'complete'],
-  },
-  {
-    id: 2, name: 'Anjali Verma', college: 'NIT Trichy', state: 'Tamil Nadu',
-    rank: 'AIR 3200 (JEE Main)', branch: 'Electronics',
-    rating: 4.8, sessions: 22, year: '2nd year',
-    bundles: ['insider', 'college', 'complete', 'seat'],
-  },
-  {
-    id: 3, name: 'Vikram Singh', college: 'BITS Pilani', state: 'Rajasthan',
-    rank: '380 (BITSAT)', branch: 'Mechanical',
-    rating: 4.7, sessions: 15, year: '3rd year',
-    bundles: ['insider', 'college', 'branch'],
-  },
-  {
-    id: 4, name: 'Sneha Gupta', college: 'IIT Delhi', state: 'Delhi',
-    rank: 'AIR 850 (JEE Adv)', branch: 'Electrical',
-    rating: 4.9, sessions: 44, year: '4th year',
-    bundles: ['insider', 'branch', 'complete', 'seat'],
-  },
-  {
-    id: 5, name: 'Aarav Patel', college: 'NIT Surathkal', state: 'Karnataka',
-    rank: 'AIR 4100 (JEE Main)', branch: 'Computer Science',
-    rating: 4.6, sessions: 19, year: '2nd year',
-    bundles: ['insider', 'college', 'backup', 'complete'],
-  },
-  {
-    id: 6, name: 'Priya Desai', college: 'VJTI Mumbai', state: 'Maharashtra',
-    rank: '99.8% (MHT-CET)', branch: 'IT',
-    rating: 4.7, sessions: 12, year: '3rd year',
-    bundles: ['insider', 'college', 'branch', 'backup'],
-  },
-  {
-    id: 7, name: 'Rohan Mehta', college: 'IIT Kanpur', state: 'Uttar Pradesh',
-    rank: 'AIR 1200 (JEE Adv)', branch: 'Aerospace',
-    rating: 4.8, sessions: 29, year: '4th year',
-    bundles: ['insider', 'branch', 'complete', 'seat'],
-  },
-  {
-    id: 8, name: 'Kavya Reddy', college: 'NIT Warangal', state: 'Telangana',
-    rank: 'AIR 5500 (JEE Main)', branch: 'Civil',
-    rating: 4.5, sessions: 10, year: '2nd year',
-    bundles: ['insider', 'college', 'backup'],
-  },
-  {
-    id: 9, name: 'Karan Malhotra', college: 'DTU Delhi', state: 'Delhi',
-    rank: 'AIR 7000 (JEE Main)', branch: 'IT',
-    rating: 4.6, sessions: 17, year: '3rd year',
-    bundles: ['insider', 'college', 'branch', 'backup'],
-  },
-];
+// We will fetch these from the backend instead of hardcoding.
+
 
 const AVATAR_COLORS = [
   { bg: '#E6F1FB', text: '#0C447C' },
@@ -185,10 +133,18 @@ function BundleRow({ bundleId, isSelected, onSelect }) {
 // ─── Mentor card ──────────────────────────────────────────────────────────
 function MentorCard({ mentor, index }) {
   const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
-  const initialBundle = mentor.bundles.includes('complete') ? 'complete' : mentor.bundles[0];
-  const [selectedBundle, setSelectedBundle] = useState(initialBundle);
+  // Convert DB bundles into bundle IDs (if DB stores names, map them back)
+  const mentorBundles = Array.isArray(mentor.bundles) ? mentor.bundles.map(b => {
+    const found = BUNDLES.find(bx => bx.name === b || bx.id === b);
+    return found ? found.id : null;
+  }).filter(Boolean) : [];
   
-  const waUrl = `https://wa.me/919579040183?text=${BUNDLE_MAP[selectedBundle]?.wa ?? ''}`;
+  const initialBundle = mentorBundles.includes('complete') ? 'complete' : mentorBundles[0];
+  const [selectedBundle, setSelectedBundle] = useState(initialBundle);
+  const [showPayment, setShowPayment] = useState(false);
+  
+  const bundle = BUNDLE_MAP[selectedBundle];
+  const waUrl = `https://wa.me/919579040183?text=${bundle?.wa ?? ''}`;
 
   return (
     <motion.div
@@ -221,21 +177,31 @@ function MentorCard({ mentor, index }) {
       <div className="space-y-1.5 pb-4 border-b border-slate-100 mb-4">
         <div className="flex items-center gap-2 text-[11px] text-slate-500">
           <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-          {mentor.state} · {mentor.year}
+          {mentor.state || 'N/A'} {mentor.year ? `· ${mentor.year}` : ''}
         </div>
         <div className="flex items-center gap-2 text-[11px] text-slate-500">
           <BookOpen className="w-3.5 h-3.5 flex-shrink-0" />
-          {mentor.branch}
+          {mentor.branch || 'B.Tech'}
         </div>
         <div className="flex items-center gap-2 text-[11px] font-semibold text-amber-700">
           <Medal className="w-3.5 h-3.5 flex-shrink-0" />
-          {mentor.rank}
+          {mentor.rank ? `AIR ${mentor.rank}` : 'Rank N/A'}
         </div>
         <div className="flex items-center gap-2 text-[11px] text-slate-500">
           <Star className="w-3.5 h-3.5 flex-shrink-0 fill-amber-400 text-amber-400" />
-          {mentor.rating} · {mentor.sessions} sessions done
+          {mentor.rating || 5.0} · {mentor.sessions || 0} sessions done
         </div>
       </div>
+
+      {/* Bio / Pitch */}
+      {mentor.bio && (
+        <div className="mb-4 pb-4 border-b border-slate-100">
+          <p className="text-[11px] text-slate-600 italic leading-relaxed bg-blue-50/50 p-3 rounded-xl border border-blue-100/50 relative">
+            <span className="absolute -top-2 left-2 text-xl text-blue-200">"</span>
+            {mentor.bio}
+          </p>
+        </div>
+      )}
 
       {/* Bundles */}
       <div className="flex-1">
@@ -243,7 +209,7 @@ function MentorCard({ mentor, index }) {
           Available bundles
         </p>
         <div className="space-y-1.5">
-          {mentor.bundles.map(bid => (
+          {mentorBundles.map(bid => (
             <BundleRow 
               key={bid} 
               bundleId={bid} 
@@ -251,26 +217,46 @@ function MentorCard({ mentor, index }) {
               onSelect={() => setSelectedBundle(bid)}
             />
           ))}
+          {mentorBundles.length === 0 && (
+            <p className="text-xs text-slate-400 italic">No bundles offered yet.</p>
+          )}
         </div>
       </div>
 
       {/* CTA */}
-      <a
-        href={waUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-4 block"
+      <button 
+        onClick={() => setShowPayment(true)}
+        className="mt-4 w-full py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200"
       >
-        <button className="w-full py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200">
-          Book {BUNDLE_MAP[selectedBundle]?.name} →
-        </button>
-      </a>
+        Book {bundle?.name} →
+      </button>
+
+      {/* Payment Modal */}
+      {bundle && (
+        <PaymentModal
+          open={showPayment}
+          onClose={() => setShowPayment(false)}
+          planTitle={bundle.name}
+          planPrice={bundle.price.replace(/[^\d]/g, '')}
+          onSuccessRedirectUrl={waUrl}
+        />
+      )}
     </motion.div>
   );
 }
 
 // ─── Main page ─────────────────────────────────────────────────────────────
 export default function MentorsPage() {
+  const [mentors, setMentors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    getMentors()
+      .then(res => setMentors(res.mentors || []))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
+
   const [search, setSearch] = useState('');
   const [filterCollege, setFilterCollege] = useState('');
   const [filterState, setFilterState] = useState('');
@@ -278,20 +264,24 @@ export default function MentorsPage() {
   const [sortBy, setSortBy] = useState('default');
 
   const filtered = useMemo(() => {
-    let list = MENTORS.filter(m =>
+    let list = mentors.filter(m =>
       (!search || m.name.toLowerCase().includes(search.toLowerCase())) &&
       (!filterCollege || m.college.includes(filterCollege)) &&
       (!filterState || m.state === filterState) &&
       (!filterBranch || m.branch === filterBranch)
     );
-    if (sortBy === 'rating') list = [...list].sort((a, b) => b.rating - a.rating);
-    if (sortBy === 'sessions') list = [...list].sort((a, b) => b.sessions - a.sessions);
+    if (sortBy === 'rating') list = [...list].sort((a, b) => (b.rating || 5) - (a.rating || 5));
+    if (sortBy === 'sessions') list = [...list].sort((a, b) => (b.sessions || 0) - (a.sessions || 0));
     if (sortBy === 'priceLow') list = [...list].sort((a, b) => {
       const price = id => parseInt((BUNDLE_MAP[id]?.price ?? '₹0').replace(/[^\d]/g, ''));
-      return Math.min(...a.bundles.map(price)) - Math.min(...b.bundles.map(price));
+      const aBundles = a.bundles ? a.bundles.map(bx => BUNDLES.find(x => x.name === bx || x.id === bx)?.id).filter(Boolean) : [];
+      const bBundles = b.bundles ? b.bundles.map(bx => BUNDLES.find(x => x.name === bx || x.id === bx)?.id).filter(Boolean) : [];
+      const aMin = aBundles.length ? Math.min(...aBundles.map(price)) : 0;
+      const bMin = bBundles.length ? Math.min(...bBundles.map(price)) : 0;
+      return aMin - bMin;
     });
     return list;
-  }, [search, filterCollege, filterState, filterBranch, sortBy]);
+  }, [mentors, search, filterCollege, filterState, filterBranch, sortBy]);
 
   const hasFilter = search || filterCollege || filterState || filterBranch;
 
@@ -458,7 +448,9 @@ export default function MentorsPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm text-slate-500">
-                Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {MENTORS.length} mentors
+                {loading ? 'Loading mentors...' : (
+                  <>Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {mentors.length} mentors</>
+                )}
               </p>
               <select
                 value={sortBy}
@@ -479,7 +471,7 @@ export default function MentorsPage() {
                 ))}
               </AnimatePresence>
 
-              {filtered.length === 0 && (
+              {filtered.length === 0 && !loading && (
                 <div className="col-span-full py-24 text-center">
                   <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-4">
                     <Search className="w-7 h-7" />

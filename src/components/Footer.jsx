@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { footerLinks } from '../data/siteContent';
 import TrustBadges from './TrustBadges';
 
@@ -36,7 +37,7 @@ export default function Footer({ onAdminClick }) {
                 </a>
               )
             ))}
-            <button onClick={onAdminClick} className="ml-2 text-xs text-white hover:opacity-80 transition">Admin</button>
+            <Link to="/atyantlogin" className="ml-2 text-xs text-white/40 hover:text-white transition">Admin</Link>
           </div>
         </div>
       </footer>
