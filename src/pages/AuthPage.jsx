@@ -5,34 +5,35 @@ import { userLogin, userSignup } from '../utils/api';
 export default function AuthPage({ setUser }) {
   const [isLogin, setIsLogin] = useState(true);
   const [role, setRole] = useState('student');
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+  const [phone, setPhone] = useState('');
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if(!isLogin && phone.length!=10){setError("Invalid Phone Number");return;}
     setLoading(true);
-
+    
     try {
       let res;
       if (isLogin) {
         res = await userLogin({ email, password });
       } else {
-        res = await userSignup({ name, email, password, role });
+        res = await userSignup({ name, email,phone, password, role });
       }
-      
       if (setUser) setUser(res.user);
-      
+
       // On success, redirect them to a dashboard or home
       // For now, redirect to home. You can change this to a specific dashboard later.
       navigate('/');
-      
+
     } catch (err) {
       setError(err.message || 'Authentication failed');
     } finally {
@@ -43,7 +44,7 @@ export default function AuthPage({ setUser }) {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
-        
+
         <div className="text-center mb-8">
           <h2 className="text-3xl font-black text-[#0B0F2E]">
             {isLogin ? 'Welcome Back' : 'Create an Account'}
@@ -59,18 +60,16 @@ export default function AuthPage({ setUser }) {
             <button
               type="button"
               onClick={() => setRole('student')}
-              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-                role === 'student' ? 'bg-white shadow text-[#0B0F2E]' : 'text-slate-500 hover:text-slate-700'
-              }`}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${role === 'student' ? 'bg-white shadow text-[#0B0F2E]' : 'text-slate-500 hover:text-slate-700'
+                }`}
             >
               Student
             </button>
             <button
               type="button"
               onClick={() => setRole('mentor')}
-              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-                role === 'mentor' ? 'bg-white shadow text-[#FF6B2B]' : 'text-slate-500 hover:text-slate-700'
-              }`}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${role === 'mentor' ? 'bg-white shadow text-[#FF6B2B]' : 'text-slate-500 hover:text-slate-700'
+                }`}
             >
               Mentor
             </button>
@@ -110,6 +109,19 @@ export default function AuthPage({ setUser }) {
             />
           </div>
 
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
+              <input
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="9436782165"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
             <input

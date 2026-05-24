@@ -8,58 +8,57 @@ const AVAILABLE_BUNDLES = [
     name: 'Quick Clarity',
     price: 399,
     originalPrice: 799,
-    discount: '50% OFF – Early Bird',
+    discount: '50% OFF – Limited Time Offer',
     icon: '⚡',
     desc: 'For students who want quick clarity on options and next steps.',
     includes: [
       '20–30 min focused session',
       'One major confusion solved',
       'Rank & options quick review',
-      'Post-call key summary',
+      'Post-call action summary',
       '24-hour WhatsApp support',
     ],
-    mentorNote: 'You commit to 1 focused session + post-call key summary + 24hr WhatsApp availability.',
+    mentorNote: 'You commit to 1 focused session + post-call action summary + 24hr WhatsApp availability.',
   },
   {
     id: 'complete-guidance',
     name: 'Complete Guidance',
     price: 999,
-    originalPrice: 1999,
-    discount: '60% OFF – JoSAA Launch',
+    originalPrice: 2499,
+    discount: '60% OFF – JoSAA Launch Pricing',
     badge: '⭐ Most Popular',
     icon: '🚀',
-    desc: 'For students who want complete strategy, clarity & recorded guidance.',
+    desc: 'For students who want complete strategy, clarity & guided decision-making.',
     includes: [
-      '2 in-depth sessions',
+      '2 in-depth guidance sessions',
       'Personalized strategy & roadmap',
       'Branch vs college analysis',
       'Freeze / Float guidance',
       'WhatsApp support (3–5 days)',
-      'Session recording',
-      'MOM / Summary PDF',
+      'Call summary PDF',
       'Resource packs & strategy sheets',
     ],
-    mentorNote: 'You commit to 2 sessions + MOM/summary PDF + 3–5 day WhatsApp support + session recording.',
+    mentorNote: 'You commit to 2 guidance sessions + call summary PDF + 3–5 day WhatsApp support.',
   },
   {
     id: 'dream-seat',
     name: 'Dream Seat Protection™',
     price: 1799,
-    originalPrice: 2999,
-    discount: '70% OFF – Priority Support',
+    originalPrice: 5999,
+    discount: '70% OFF – Priority Round Support',
     icon: '🛡️',
-    desc: 'For students & parents who want end-to-end handholding till the final round.',
+    desc: 'For parents & students seeking peace of mind and end-to-end handholding.',
     includes: [
-      'Everything in Complete Guidance',
+      'Everything in Complete Guidance, plus:',
       'Round-wise JoSAA + CSAB support',
-      'Freeze / Float / Slide strategy',
-      'Parent clarity session',
-      'Final preference list review',
+      'Freeze / Float / Slide strategy guidance',
+      'Dedicated parent discussion session',
+      'Preference order optimization',
       'Priority WhatsApp support',
-      'Backup & alternative pathway planning',
-      'Dedicated till final round',
+      'Backup strategy if allotment changes',
+      'Dedicated mentor till final rounds',
     ],
-    mentorNote: 'You commit to full JoSAA/CSAB round-wise support + parent session + priority availability till final round.',
+    mentorNote: 'You commit to dedicated, emotional reassurance and complete cross-round JoSAA/CSAB support for the family till the final admission lists.',
   },
 ];
 
@@ -150,7 +149,6 @@ export default function ProfilePage({ user, setUser }) {
   };
 
   if (!user) return null;
-
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
@@ -183,6 +181,16 @@ export default function ProfilePage({ user, setUser }) {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
+            <input
+              type="text"
+              disabled
+              value={user.phone}
+              placeholder='N/A'
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+            />
+          </div>
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
             <input

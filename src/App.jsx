@@ -26,7 +26,7 @@ function AppContent() {
     const token = localStorage.getItem('user_token');
     if (token) {
       getUserMe()
-        .then((res) => setUser(res.user))
+        .then((res) => {setUser(res.user);})
         .catch(() => localStorage.removeItem('user_token'));
     }
   }, []);
