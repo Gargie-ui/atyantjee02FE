@@ -37,6 +37,15 @@ export default function Navbar({ onLeadClick, activeTab, onTabChange, user }) {
             Find Mentors <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500/20 text-[9px] font-bold text-blue-400 ring-1 ring-blue-500/50">NEW</span>
           </button>
 
+          {user && (
+            <Link 
+              to="/profile"
+              className="text-sm font-medium text-white hover:text-[#FF6B2B] transition flex items-center gap-1"
+            >
+              My Bookings <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">Paid</span>
+            </Link>
+          )}
+
           {navLinks.map((link) => (
             <a key={link.label} href={link.href} className="text-sm font-medium text-white hover:text-[#FF6B2B] transition">
               {link.label}

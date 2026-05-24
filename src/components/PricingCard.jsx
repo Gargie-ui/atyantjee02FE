@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, X, Sparkles, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { getWhatsAppLink } from '../utils/whatsapp';
 import { createPaymentOrder, verifyPayment, getUserMe } from '../utils/api';
 
@@ -11,11 +12,11 @@ const PLAN_ID_MAP = {
   'Dream Seat Protection™': 'dream-seat',
 };
 
-function loadRazorpay() {
+function loadCashfree() {
   return new Promise((resolve) => {
-    if (window.Razorpay) return resolve(true);
+    if (window.Cashfree) return resolve(true);
     const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
     script.onload = () => resolve(true);
     script.onerror = () => resolve(false);
     document.body.appendChild(script);
@@ -24,7 +25,7 @@ function loadRazorpay() {
 
 // ─── Payment Modal ─────────────────────────────────────────────────────────────
 
-export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRedirectUrl }) {
+export function PaymentModal({ open, onClose, planTitle, planPrice, mentorId, onSuccessRedirectUrl }) {
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [phone, setPhone] = React.useState('');
@@ -37,12 +38,13 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
       setLoading(false); setError(''); setSuccess(false);
     } else {
       const token = localStorage.getItem('user_token');
-      if (token && !name && !email) {
+      if (token) {
         getUserMe()
           .then((res) => {
             if (res?.user) {
               if (!name) setName(res.user.name || '');
               if (!email) setEmail(res.user.email || '');
+              if (!phone) setPhone(res.user.phone || '');
             }
           })
           .catch(() => {});
@@ -53,6 +55,13 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
   async function handlePay(e) {
     e.preventDefault();
     setError('');
+
+    // Extra validation for phone number
+    if (!/^[0-9]{10}$/.test(phone)) {
+      setError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
     setLoading(true);
 
     const planId = PLAN_ID_MAP[planTitle];
@@ -64,50 +73,26 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
     }
 
     try {
-      const orderData = await createPaymentOrder({ planId, name, email, phone: phone || undefined });
-      const loaded = await loadRazorpay();
-      if (!loaded) throw new Error('Could not load Razorpay. Check your internet connection.');
+      const orderData = await createPaymentOrder({ planId, name, email, phone, mentorId });
+      const loaded = await loadCashfree();
+      if (!loaded) throw new Error('Could not load Cashfree SDK. Check your internet connection.');
 
-      await new Promise((resolve, reject) => {
-        const rzp = new window.Razorpay({
-          key: orderData.razorpayKeyId,
-          amount: orderData.order.amount,
-          currency: orderData.order.currency,
-          name: 'Atyant',
-          description: planTitle,
-          order_id: orderData.order.id,
-          prefill: { name, email, contact: phone },
-          theme: { color: '#FF6B2B' },
-          handler: async (response) => {
-            try {
-              await verifyPayment({
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-              });
-              setSuccess(true);
-              if (onSuccessRedirectUrl) {
-                setTimeout(() => {
-                  window.open(onSuccessRedirectUrl, '_blank');
-                  onClose();
-                }, 1500);
-              }
-              resolve();
-            } catch (verifyErr) {
-              reject(verifyErr);
-            }
-          },
-          modal: {
-            ondismiss: () => reject(new Error('Payment cancelled')),
-          },
-        });
-        rzp.open();
+      const cashfree = window.Cashfree({
+        mode: orderData.cashfreeEnvironment === 'production' ? 'production' : 'sandbox'
       });
-    } catch (err) {
-      if (err.message !== 'Payment cancelled') {
-        setError(err.message || 'Something went wrong. Please try again.');
+
+      // Save pending WhatsApp redirection URL for verification hook
+      if (onSuccessRedirectUrl) {
+        localStorage.setItem('atyant_pending_redirect', onSuccessRedirectUrl);
       }
-    } finally {
+
+      await cashfree.checkout({
+        paymentSessionId: orderData.paymentSessionId,
+        returnUrl: `${window.location.origin}/profile?order_id=${orderData.orderId}`
+      });
+
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Please try again.');
       setLoading(false);
     }
   }
@@ -154,13 +139,14 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
             <form onSubmit={handlePay} className="space-y-4">
               <div>
                 <h3 className="text-lg font-bold text-gray-900">Pay for {planTitle}</h3>
-                <p className="text-sm text-gray-500">₹{planPrice} — secure payment via Razorpay</p>
+                <p className="text-sm text-gray-500">₹{planPrice} — secure payment via Cashfree</p>
               </div>
 
               {error && (
                 <p className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>
               )}
 
+              {/* Form Inputs ... */}
               <div>
                 <label className="mb-1 block text-xs font-medium text-gray-700">Full Name *</label>
                 <input
@@ -178,10 +164,15 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">Phone (optional)</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700">Phone *</label>
                 <input
-                  type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 XXXXX XXXXX"
+                  required
+                  type="tel"
+                  pattern="[0-9]{10}"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="9876543210"
+                  title="Please enter a valid 10-digit mobile number"
                   className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40"
                 />
               </div>
@@ -195,7 +186,7 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, onSuccessRed
               </button>
 
               <p className="text-center text-[11px] text-gray-400">
-                🔒 Secured by Razorpay · 100% safe checkout
+                🔒 Secured by Cashfree · 100% safe checkout
               </p>
             </form>
           )}
@@ -221,15 +212,16 @@ export default function PricingCard({
   highlighted = false,
   badge,
 }) {
-  const [showModal, setShowModal] = React.useState(false);
+  const navigate = useNavigate();
   const [showAllBonus, setShowAllBonus] = React.useState(false);
 
   const hasPlanId = Boolean(PLAN_ID_MAP[title]);
 
   function handleCTA(e) {
     e.preventDefault();
-    if (hasPlanId) {
-      setShowModal(true);
+    const planId = PLAN_ID_MAP[title];
+    if (planId) {
+      navigate(`/mentors?bundle=${planId}`);
     } else {
       window.open(getWhatsAppLink(title), '_blank');
     }
@@ -367,13 +359,6 @@ export default function PricingCard({
           </p>
         </div>
       </motion.div>
-
-      <PaymentModal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        planTitle={title}
-        planPrice={price}
-      />
     </>
   );
 }

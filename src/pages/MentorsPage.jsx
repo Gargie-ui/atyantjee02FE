@@ -4,6 +4,7 @@ import {
   Filter, Search, MapPin, BookOpen, Medal, Star,
   CheckCircle2, ChevronRight, Users, ExternalLink
 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { PaymentModal } from '../components/PricingCard';
 
 // ─── Bundle definitions ────────────────────────────────────────────────────
@@ -46,7 +47,7 @@ const BUNDLES = [
 
 const BUNDLE_MAP = Object.fromEntries(BUNDLES.map(b => [b.id, b]));
 
-import { getMentors } from '../utils/api';
+import API_BASE, { getMentors } from '../utils/api';
 
 // ─── Mentor data ───────────────────────────────────────────────────────────
 // We will fetch these from the backend instead of hardcoding.
@@ -120,7 +121,7 @@ function BundleRow({ bundleId, isSelected, onSelect }) {
 }
 
 // ─── Mentor card ──────────────────────────────────────────────────────────
-function MentorCard({ mentor, index }) {
+function MentorCard({ mentor, index, defaultBundle }) {
   const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
   // Convert DB bundles into bundle IDs (if DB stores names, map them back)
   const mentorBundles = Array.isArray(mentor.bundles) ? mentor.bundles.map(b => {
@@ -128,9 +129,18 @@ function MentorCard({ mentor, index }) {
     return found ? found.id : null;
   }).filter(Boolean) : [];
   
-  const initialBundle = mentorBundles.includes('complete-guidance') ? 'complete-guidance' : mentorBundles[0];
+  const initialBundle = (defaultBundle && mentorBundles.includes(defaultBundle)) 
+    ? defaultBundle 
+    : (mentorBundles.includes('complete-guidance') ? 'complete-guidance' : mentorBundles[0]);
+    
   const [selectedBundle, setSelectedBundle] = useState(initialBundle);
   const [showPayment, setShowPayment] = useState(false);
+
+  useEffect(() => {
+    if (defaultBundle && mentorBundles.includes(defaultBundle)) {
+      setSelectedBundle(defaultBundle);
+    }
+  }, [defaultBundle, mentorBundles]);
   
   const bundle = BUNDLE_MAP[selectedBundle];
   const waUrl = `https://wa.me/919579040183?text=${bundle?.wa ?? ''}`;
@@ -146,12 +156,20 @@ function MentorCard({ mentor, index }) {
     >
       {/* Top: avatar + name */}
       <div className="flex items-center gap-3 mb-4">
-        <div
-          className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-          style={{ backgroundColor: color.bg, color: color.text }}
-        >
-          {getInitials(mentor.name)}
-        </div>
+        {mentor.profilePhotoFilename ? (
+          <img 
+            src={`${API_BASE}/api/upload/profile-photo/${mentor.profilePhotoFilename}`} 
+            alt={mentor.name} 
+            className="w-14 h-14 rounded-full object-cover border-2 border-slate-100 flex-shrink-0 shadow-sm"
+          />
+        ) : (
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center text-base font-extrabold flex-shrink-0"
+            style={{ backgroundColor: color.bg, color: color.text }}
+          >
+            {getInitials(mentor.name)}
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-black text-slate-900 truncate">{mentor.name}</h4>
           <p className="text-xs font-semibold text-blue-600 truncate">{mentor.college}</p>
@@ -227,6 +245,7 @@ function MentorCard({ mentor, index }) {
           onClose={() => setShowPayment(false)}
           planTitle={bundle.name}
           planPrice={bundle.price.replace(/[^\d]/g, '')}
+          mentorId={mentor.id || mentor._id}
           onSuccessRedirectUrl={waUrl}
         />
       )}
@@ -236,6 +255,9 @@ function MentorCard({ mentor, index }) {
 
 // ─── Main page ─────────────────────────────────────────────────────────────
 export default function MentorsPage() {
+  const location = useLocation();
+  const bundleParam = new URLSearchParams(location.search).get('bundle');
+  
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -456,7 +478,7 @@ export default function MentorsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               <AnimatePresence>
                 {filtered.map((mentor, i) => (
-                  <MentorCard key={mentor.id} mentor={mentor} index={i} />
+                  <MentorCard key={mentor._id || mentor.id || i} mentor={mentor} index={i} defaultBundle={bundleParam} />
                 ))}
               </AnimatePresence>
 
