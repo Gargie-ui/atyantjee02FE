@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ALL_INDIAN_STATES, POPULAR_LANGUAGES, COLLEGES_BY_TYPE } from '../data/siteContent';
 import { getUserMe, updateUser, uploadProfilePhoto, uploadIdDoc, getMyBookings, deleteIdDoc, verifyPayment } from '../utils/api';
 import API_BASE from '../utils/api';
+import { getDetailedWhatsAppLink } from '../utils/whatsapp';
+
 
 const AVAILABLE_BUNDLES = [
   {
@@ -117,32 +119,44 @@ export default function ProfilePage({ user, setUser }) {
     const orderId = params.get('order_id');
     if (orderId) {
       setError('');
-      setSuccess('Verifying payment with Cashfree...');
-
+      setSuccess('Confirming your payment with Cashfree...');
+      
       // Clean query parameter immediately from the browser history so refresh doesn't trigger verification again
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
 
       verifyPayment({ cashfreeOrderId: orderId })
         .then((res) => {
-          setSuccess('Payment verified successfully! Welcome to premium mentorship!');
-
+          setSuccess('Payment successful! Welcome to premium mentorship!');
+          setTimeout(() => setSuccess(''), 5000);
+          
           // Re-fetch bookings and user info
           getUserMe().then(r => {
             if (r?.user) setUser(r.user);
           });
           getMyBookings().then(r => {
-            if (r?.bookings) setBookings(r.bookings);
+            if (r?.bookings && r.bookings.length > 0) {
+              setBookings(r.bookings);
+              const freshBooking = r.bookings[0];
+              if (freshBooking) {
+                const redirectLink = getDetailedWhatsAppLink(freshBooking);
+                localStorage.removeItem('atyant_pending_redirect');
+                setTimeout(() => {
+                  window.open(redirectLink, '_blank');
+                }, 1500);
+              }
+            } else {
+              if (r?.bookings) setBookings(r.bookings);
+              // Perform WhatsApp auto-launch if redirect url exists in localStorage
+              const pendingRedirect = localStorage.getItem('atyant_pending_redirect');
+              if (pendingRedirect) {
+                localStorage.removeItem('atyant_pending_redirect');
+                setTimeout(() => {
+                  window.open(pendingRedirect, '_blank');
+                }, 1500);
+              }
+            }
           });
-
-          // Perform WhatsApp auto-launch if redirect url exists in localStorage
-          const pendingRedirect = localStorage.getItem('atyant_pending_redirect');
-          if (pendingRedirect) {
-            localStorage.removeItem('atyant_pending_redirect');
-            setTimeout(() => {
-              window.open(pendingRedirect, '_blank');
-            }, 1000);
-          }
         })
         .catch((err) => {
           setError(err.message || 'Payment verification failed. If money was debited, please contact support.');
@@ -737,8 +751,8 @@ export default function ProfilePage({ user, setUser }) {
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-3 justify-end border-t border-slate-50 pt-3">
-                      <a
-                        href={`https://wa.me/919579040183?text=Hi+Atyant%2C+I+have+purchased+${encodeURIComponent(booking.planTitle)}+package.+My+booking+ID+is+${booking._id}.+Please+help+me+schedule+my+session.`}
+                      <a 
+                        href={getDetailedWhatsAppLink(booking)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-4 py-2 rounded-xl bg-[#25D366] text-white text-xs font-bold hover:bg-[#20ba56] transition-all flex items-center gap-1.5 shadow-sm shadow-[#25D366]/10"

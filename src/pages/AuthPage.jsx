@@ -24,7 +24,7 @@ export default function AuthPage({ setUser }) {
       if (isLogin) {
         res = await userLogin({ phone, password });
       } else {
-        res = await userSignup({ name, email,phone, password, role });
+        res = await userSignup({ name, phone, password, role });
       }
       if (setUser) setUser(res.user);
 
@@ -109,19 +109,6 @@ export default function AuthPage({ setUser }) {
             />
           </div>
 
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
-              <input
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="9436782165"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
-              />
-            </div>
-          )}
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
             <input
