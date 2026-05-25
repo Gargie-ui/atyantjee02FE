@@ -1,6 +1,6 @@
-import React, { useRef,useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ALL_INDIAN_STATES,POPULAR_LANGUAGES,COLLEGES_BY_TYPE } from '../data/siteContent';
+import { ALL_INDIAN_STATES, POPULAR_LANGUAGES, COLLEGES_BY_TYPE } from '../data/siteContent';
 import { getUserMe, updateUser, uploadProfilePhoto, uploadIdDoc, getMyBookings, deleteIdDoc, verifyPayment } from '../utils/api';
 import API_BASE from '../utils/api';
 
@@ -72,7 +72,7 @@ export default function ProfilePage({ user, setUser }) {
   const [success, setSuccess] = useState('');
 
   const [name, setName] = useState('');
-  
+
   // Mentor-specific Profile Fields State
   const [collegeType, setCollegeType] = useState('');
   const [college, setCollege] = useState('');
@@ -86,7 +86,7 @@ export default function ProfilePage({ user, setUser }) {
   const [gender, setGender] = useState('');
   const [bundles, setBundles] = useState([]);
   const [bio, setBio] = useState('');
-  
+
   const [profilePhotoFilename, setProfilePhotoFilename] = useState('');
   const [verificationStatus, setVerificationStatus] = useState('none');
   const [idDocFilename, setIdDocFilename] = useState('');
@@ -118,7 +118,7 @@ export default function ProfilePage({ user, setUser }) {
     if (orderId) {
       setError('');
       setSuccess('Verifying payment with Cashfree...');
-      
+
       // Clean query parameter immediately from the browser history so refresh doesn't trigger verification again
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
@@ -126,7 +126,7 @@ export default function ProfilePage({ user, setUser }) {
       verifyPayment({ cashfreeOrderId: orderId })
         .then((res) => {
           setSuccess('Payment verified successfully! Welcome to premium mentorship!');
-          
+
           // Re-fetch bookings and user info
           getUserMe().then(r => {
             if (r?.user) setUser(r.user);
@@ -163,13 +163,13 @@ export default function ProfilePage({ user, setUser }) {
       if (user.role === 'mentor') {
         // Attempt to determine category type index configuration from value string
         if (user.college) {
-          const matchedType = Object.keys(COLLEGES_BY_TYPE).find(type => 
+          const matchedType = Object.keys(COLLEGES_BY_TYPE).find(type =>
             COLLEGES_BY_TYPE[type].includes(user.college)
           );
           setCollegeType(matchedType || 'OTHERS');
           setCollege(user.college);
         }
-        
+
         setBranch(user.branch || '');
         setCgpa(user.cgpa || '');
         setState(user.state || '');
@@ -179,7 +179,7 @@ export default function ProfilePage({ user, setUser }) {
         setCategoryRank(user.categoryRank || '');
         setPreferredLang(user.preferredLang || '');
         setGender(user.gender || '');
-        
+
         const mappedBundles = (user.bundles || []).map(b => {
           if (b === 'Quick Clarity') return 'quick-clarity';
           if (b === 'Complete Guidance') return 'complete-guidance';
@@ -191,7 +191,7 @@ export default function ProfilePage({ user, setUser }) {
         setProfilePhotoFilename(user.profilePhotoFilename || '');
         setVerificationStatus(user.verificationStatus || 'none');
         setIdDocFilename(user.idDocFilename || '');
-        
+
         // Show popup if profile is incomplete or verification is pending
         if (!user.college || !user.rank || user.verificationStatus === 'none') {
           setError('Please complete your profile and upload your ID document to get verified.');
@@ -322,14 +322,14 @@ export default function ProfilePage({ user, setUser }) {
         {success && <div className="mb-6 p-4 bg-green-50 text-green-600 rounded-xl text-sm font-medium border border-green-100">{success}</div>}
 
         <form onSubmit={handleSave} className="space-y-6">
-          
+
           {user.role === 'mentor' && (
             <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
               <div className="relative">
                 {profilePhotoFilename ? (
-                  <img 
-                    src={`${API_BASE}/api/upload/profile-photo/${profilePhotoFilename}`} 
-                    alt="Profile" 
+                  <img
+                    src={`${API_BASE}/api/upload/profile-photo/${profilePhotoFilename}`}
+                    alt="Profile"
                     className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-sm"
                   />
                 ) : (
@@ -337,7 +337,7 @@ export default function ProfilePage({ user, setUser }) {
                     {name ? name.charAt(0).toUpperCase() : 'M'}
                   </div>
                 )}
-                <button 
+                <button
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
                   disabled={photoUploading}
@@ -346,12 +346,12 @@ export default function ProfilePage({ user, setUser }) {
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 </button>
-                <input 
-                  type="file" 
-                  ref={photoInputRef} 
-                  onChange={handlePhotoUpload} 
-                  accept="image/jpeg, image/png, image/webp" 
-                  className="hidden" 
+                <input
+                  type="file"
+                  ref={photoInputRef}
+                  onChange={handlePhotoUpload}
+                  accept="image/jpeg, image/png, image/webp"
+                  className="hidden"
                 />
               </div>
               <div className="flex-1 text-center md:text-left">
@@ -382,6 +382,16 @@ export default function ProfilePage({ user, setUser }) {
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
             />
           </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
+            <input
+              type="email"
+              disabled
+              value={user.email || ''}
+              placeholder="N/A"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+            />
+          </div>
 
           {/* ── MENTOR SPECIFIC EXTENSIONS ── */}
           {user.role === 'mentor' && (
@@ -392,26 +402,25 @@ export default function ProfilePage({ user, setUser }) {
                     <h3 className="text-base font-bold text-slate-800">Identity Verification</h3>
                     <p className="text-xs text-slate-500 mt-1">Upload your College ID or Aadhaar Card to get verified.</p>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    verificationStatus === 'verified' ? 'bg-green-100 text-green-700' :
-                    verificationStatus === 'pending' ? 'bg-amber-100 text-amber-700' :
-                    verificationStatus === 'rejected' ? 'bg-red-100 text-red-700' :
-                    'bg-slate-200 text-slate-600'
-                  }`}>
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${verificationStatus === 'verified' ? 'bg-green-100 text-green-700' :
+                      verificationStatus === 'pending' ? 'bg-amber-100 text-amber-700' :
+                        verificationStatus === 'rejected' ? 'bg-red-100 text-red-700' :
+                          'bg-slate-200 text-slate-600'
+                    }`}>
                     {verificationStatus.toUpperCase()}
                   </div>
                 </div>
-                
+
                 {verificationStatus !== 'verified' && (
                   <div>
-                    <input 
-                      type="file" 
-                      ref={idDocInputRef} 
-                      onChange={handleIdDocUpload} 
-                      accept="image/jpeg, image/png, application/pdf" 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      ref={idDocInputRef}
+                      onChange={handleIdDocUpload}
+                      accept="image/jpeg, image/png, application/pdf"
+                      className="hidden"
                     />
-                    <button 
+                    <button
                       type="button"
                       onClick={() => idDocInputRef.current?.click()}
                       disabled={idDocUploading}
@@ -432,7 +441,7 @@ export default function ProfilePage({ user, setUser }) {
                       </span>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 ml-4">
-                      <a 
+                      <a
                         href={`${API_BASE}/api/upload/id-doc/${user.id || user._id}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -597,16 +606,14 @@ export default function ProfilePage({ user, setUser }) {
                     return (
                       <div
                         key={b.id} onClick={() => handleBundleToggle(b.id)}
-                        className={`relative flex gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                          isSelected
+                        className={`relative flex gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${isSelected
                             ? 'border-[#FF6B2B] bg-[#FF6B2B]/5 shadow-md shadow-[#FF6B2B]/10'
                             : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                        }`}
+                          }`}
                       >
                         <div className="flex-shrink-0 pt-0.5">
-                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                            isSelected ? 'bg-[#FF6B2B] border-[#FF6B2B]' : 'border-slate-300'
-                          }`}>
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-[#FF6B2B] border-[#FF6B2B]' : 'border-slate-300'
+                            }`}>
                             {isSelected && (
                               <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -647,9 +654,8 @@ export default function ProfilePage({ user, setUser }) {
                             ))}
                           </div>
 
-                          <div className={`mt-3 text-[11px] px-3 py-2 rounded-lg font-medium ${
-                            isSelected ? 'bg-[#FF6B2B]/10 text-[#FF6B2B]' : 'bg-slate-100 text-slate-500'
-                          }`}>
+                          <div className={`mt-3 text-[11px] px-3 py-2 rounded-lg font-medium ${isSelected ? 'bg-[#FF6B2B]/10 text-[#FF6B2B]' : 'bg-slate-100 text-slate-500'
+                            }`}>
                             📋 {b.mentorNote}
                           </div>
                         </div>
@@ -705,14 +711,14 @@ export default function ProfilePage({ user, setUser }) {
                           Amount paid: ₹{booking.amount / 100}
                         </div>
                       </div>
-                      
+
                       {booking.mentorId ? (
                         <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100/50">
                           <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
                             {booking.mentorId.profilePhotoFilename ? (
-                              <img 
-                                src={`${API_BASE}/api/upload/profile-photo/${booking.mentorId.profilePhotoFilename}`} 
-                                alt={booking.mentorId.name} 
+                              <img
+                                src={`${API_BASE}/api/upload/profile-photo/${booking.mentorId.profilePhotoFilename}`}
+                                alt={booking.mentorId.name}
                                 className="w-full h-full rounded-full object-cover"
                               />
                             ) : (
@@ -729,9 +735,9 @@ export default function ProfilePage({ user, setUser }) {
                         <div className="text-xs text-slate-400 italic">No specific mentor assigned yet. Support will assign one!</div>
                       )}
                     </div>
-                    
+
                     <div className="mt-4 flex flex-wrap gap-3 justify-end border-t border-slate-50 pt-3">
-                      <a 
+                      <a
                         href={`https://wa.me/919579040183?text=Hi+Atyant%2C+I+have+purchased+${encodeURIComponent(booking.planTitle)}+package.+My+booking+ID+is+${booking._id}.+Please+help+me+schedule+my+session.`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -750,7 +756,7 @@ export default function ProfilePage({ user, setUser }) {
                 <span className="text-3xl block mb-2">🎓</span>
                 <p className="text-sm font-semibold text-slate-700">No mentorship sessions purchased yet.</p>
                 <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Get rank-based guidance from NIT/IIT seniors and secure your dream seat today!</p>
-                <button 
+                <button
                   onClick={() => navigate('/mentors')}
                   className="mt-4 px-5 py-2 rounded-xl bg-[#FF6B2B] text-white text-xs font-bold hover:bg-orange-600 transition"
                 >
