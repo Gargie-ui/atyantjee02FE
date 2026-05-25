@@ -11,6 +11,10 @@ import GamifiedBentoSection from '../components/GamifiedBentoSection';
 import PricingCard from '../components/PricingCard';
 import TestimonialCard from '../components/TestimonialCard';
 import FAQItem from '../components/FAQItem';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
 import {
   faqCategories,
   freeGroupBullets,
@@ -371,10 +375,25 @@ function StoriesSection() {
           <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#FF6B2B]">Success Stories</div>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-[#0B0F2E] sm:text-4xl">Students who found clarity.</h2>
         </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {testimonials.map((testimonial) => (
-            <TestimonialCard key={testimonial.name} {...testimonial} />
-          ))}
+        <div className="mt-10">
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            spaceBetween={24}
+            slidesPerView={1}
+            autoplay={{ delay: 3500, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+            className="pb-10"
+          >
+            {testimonials.map((testimonial) => (
+              <SwiperSlide key={testimonial.name} className="h-auto">
+                <TestimonialCard {...testimonial} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </div>
     </motion.section>

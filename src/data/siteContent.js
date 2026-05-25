@@ -293,18 +293,15 @@ export const pricingPlans = _override?.pricingPlans ?? [
 ];
 
 export const testimonials = _override?.testimonials ?? [
-  {
-    name: 'Rohan, Pune',
-    quote: 'Saved me from taking wrong private college.',
-  },
-  {
-    name: 'Sneha, Nagpur',
-    quote: 'I was confused between branch and college. This helped a lot.',
-  },
-  {
-    name: 'Aditya, Nashik',
-    quote: 'My parents trusted the advice because it was practical.',
-  },
+  { name: 'Priya Sharma', city: 'Nagpur', quote: 'I had no idea whether to pick CSE at NIT Raipur or ECE at NIT Warangal. One session gave me placement data I could not find anywhere online. Made the right call.', stars: 5 },
+  { name: 'Arjun Mehta', city: 'Indore', quote: 'My parents were pushing for a big name college over branch. After talking to a senior from BITS Pilani, we completely changed our strategy. Best decision ever.', stars: 4 },
+  { name: 'Kavya Reddy', city: 'Bhopal', quote: 'I was about to join a private college out of panic. The session showed me I still had good options left in counselling. Saved me 4 years of regret.', stars: 5 },
+  { name: 'Rahul Tiwari', city: 'Patna', quote: 'Got clarity on which NIT branch actually has placements vs which ones just look good on paper. Nobody else gave me this honest breakdown.', stars: 5 },
+  { name: 'Ananya Singh', city: 'Lucknow', quote: 'My JEE rank was average and I felt lost. After the session I had a clear list of 6 colleges to target in JOSAA. Got into my first choice.', stars: 4 },
+  { name: 'Vikram Joshi', city: 'Surat', quote: 'The senior I talked to had the exact same rank as me two years ago. Hearing what worked for them was more useful than any YouTube video I watched.', stars: 5 },
+  { name: 'Sneha Kulkarni', city: 'Pune', quote: 'I was confused between IIIT Pune and a lower branch in VNIT. The mentorship session helped me compare future opportunities instead of just college tags.', stars: 5 },
+  { name: 'Aditya Verma', city: 'Kanpur', quote: 'Every counselling video online was giving different advice. Here I finally got a realistic roadmap based on my actual percentile and category.', stars: 5 },
+  
 ];
 
 export const faqCategories = _override?.faqCategories ?? [
