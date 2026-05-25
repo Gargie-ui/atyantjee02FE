@@ -7,9 +7,7 @@ import {
 import { useLocation } from 'react-router-dom';
 import { PaymentModal } from '../components/PricingCard';
 import API_BASE, { getMentors } from '../utils/api';
-import { ALL_INDIAN_STATES,COLLEGES_BY_TYPE } from '../data/siteContent';
-// ─── Constants & Dictionaries ──────────────────────────────────────────────
-
+import { ALL_INDIAN_STATES, COLLEGES_BY_TYPE, DEPARTMENTS } from '../data/siteContent';
 
 // ─── Bundle definitions ────────────────────────────────────────────────────
 const BUNDLES = [
@@ -51,11 +49,6 @@ const BUNDLES = [
 
 const BUNDLE_MAP = Object.fromEntries(BUNDLES.map(b => [b.id, b]));
 
-
-// ─── Mentor data ───────────────────────────────────────────────────────────
-// We will fetch these from the backend instead of hardcoding.
-
-
 const AVATAR_COLORS = [
   { bg: '#E6F1FB', text: '#0C447C' },
   { bg: '#E1F5EE', text: '#085041' },
@@ -75,6 +68,7 @@ function BundleRow({ bundleId, isSelected, onSelect }) {
   if (!b) return null;
   return (
     <button
+      type="button"
       onClick={onSelect}
       className="flex w-full items-center justify-between rounded-xl px-3 py-2 border transition-all group/bundle text-left"
       style={{
@@ -223,7 +217,7 @@ function MentorCard({ mentor, index, defaultBundle }) {
 // ─── Main page ─────────────────────────────────────────────────────────────
 export default function MentorsPage() {
   const location = useLocation();
-  const bundleParam = new URLSearchParams(location.search).get('bundle');
+  const bundleParam = useMemo(() => new URLSearchParams(location.search).get('bundle'), [location.search]);
   
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -242,13 +236,11 @@ export default function MentorsPage() {
   const [filterBranch, setFilterBranch] = useState('');
   const [sortBy, setSortBy] = useState('default');
 
-  // Clear sub-dropdown selection if parent Category type structure is reset
   const handleCollegeTypeChange = (e) => {
     setFilterCollegeType(e.target.value);
     setFilterCollegeName(''); 
   };
 
-  // Memoized college list generation matching selected parent component category
   const activeCollegeList = useMemo(() => {
     if (!filterCollegeType) return [];
     return COLLEGES_BY_TYPE[filterCollegeType] || [];
@@ -258,23 +250,38 @@ export default function MentorsPage() {
     let list = mentors.filter(m => {
       const matchSearch = !search || m.name.toLowerCase().includes(search.toLowerCase());
       
-      // Strict matching for college type
+      // Strict category normalization logic to prevent duplicate matching types
       let matchType = true;
       if (filterCollegeType) {
+        const mentorCollegeLower = (m.college || '').toLowerCase();
         if (filterCollegeType === 'STATE GOV.') {
-          matchType = m.college.toLowerCase().includes('state') || ['dtu', 'nsut', 'vjti', 'coep', 'jadavpur'].some(x => m.college.toLowerCase().includes(x));
+          matchType = mentorCollegeLower.includes('state') || ['dtu', 'nsut', 'vjti', 'coep', 'jadavpur', 'iet', 'hbtu', 'sgsits'].some(x => mentorCollegeLower.includes(x));
         } else if (filterCollegeType === 'PRIVATE') {
-          matchType = ['bits', 'vit', 'manipal', 'thapar', 'srm', 'rvce'].some(x => m.college.toLowerCase().includes(x));
+          matchType = ['bits', 'vit', 'manipal', 'thapar', 'srm', 'rvce', 'bmsce', 'msrit', 'lnmiit', 'nirma'].some(x => mentorCollegeLower.includes(x));
         } else {
-          matchType = m.college.toUpperCase().includes(filterCollegeType);
+          // Absolute mapping for standalone blocks like IIT, NIT, IIIT
+          matchType = mentorCollegeLower.includes(filterCollegeType.toLowerCase()) && 
+                     !(filterCollegeType.toLowerCase() === 'iit' && mentorCollegeLower.includes('iiit'));
         }
       }
 
-      const matchCollegeName = !filterCollegeName || m.college.toLowerCase().includes(filterCollegeName.toLowerCase());
-      const matchState = !filterState || m.state === filterState;
-      const matchBranch = !filterBranch || m.branch === filterBranch;
+      // Dropdown fallback normalization handling substring evaluations cleanly
+      const matchCollegeName = !filterCollegeName || (m.college || '').toLowerCase().includes(filterCollegeName.toLowerCase());
+      const matchState = !filterState || (m.state || '').toLowerCase() === filterState.toLowerCase();
+      const matchBranch = !filterBranch || (m.branch || '').toLowerCase().includes(filterBranch.toLowerCase());
 
-      return matchSearch && matchType && matchCollegeName && matchState && matchBranch;
+      // Safe evaluation map for query parameters passed across landing packages
+      let matchBundleParam = true;
+      if (bundleParam) {
+        matchBundleParam = Array.isArray(m.bundles) && m.bundles.some(b => {
+          if (bundleParam === 'quick-clarity') return b === 'Quick Clarity' || b === 'quick-clarity';
+          if (bundleParam === 'complete-guidance') return b === 'Complete Guidance' || b === 'complete-guidance';
+          if (bundleParam === 'dream-seat') return b === 'Dream Seat Protection™' || b === 'dream-seat';
+          return false;
+        });
+      }
+
+      return matchSearch && matchType && matchCollegeName && matchState && matchBranch && matchBundleParam;
     });
 
     if (sortBy === 'rating') list = [...list].sort((a, b) => (b.rating || 5) - (a.rating || 5));
@@ -288,17 +295,17 @@ export default function MentorsPage() {
       return aMin - bMin;
     });
     return list;
-  }, [mentors, search, filterCollegeType, filterCollegeName, filterState, filterBranch, sortBy]);
+  }, [mentors, search, filterCollegeType, filterCollegeName, filterState, filterBranch, sortBy, bundleParam]);
 
-  const hasFilter = search || filterCollegeType || filterCollegeName || filterState || filterBranch;
+  const hasFilter = search || filterCollegeType || filterCollegeName || filterState || filterBranch || bundleParam;
 
   function clearFilters() {
     setSearch(''); setFilterCollegeType(''); setFilterCollegeName(''); setFilterState(''); setFilterBranch('');
+    if (bundleParam) navigate(location.pathname, { replace: true });
   }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      {/* Hero Banner Grid Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#F3F8FF] to-[#F8FAFC] border-b border-slate-200 px-4 py-14 sm:px-6 lg:px-8">
         <div className="relative z-10 mx-auto max-w-7xl text-center">
           <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
@@ -310,18 +317,15 @@ export default function MentorsPage() {
         </div>
       </section>
 
-      {/* Main Layout Workspace Content */}
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8">
           
-          {/* Sidebar Filtration UI Component block */}
           <motion.aside initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="w-full lg:w-72 shrink-0">
             <div className="rounded-2xl bg-white border border-slate-200 p-5 sticky top-24 space-y-4">
               <div className="flex items-center gap-2 font-black text-slate-800">
                 <Filter className="w-4 h-4 text-blue-500" /> Filters
               </div>
 
-              {/* Text Query Input Selector */}
               <div className="relative">
                 <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                 <input
@@ -330,7 +334,6 @@ export default function MentorsPage() {
                 />
               </div>
 
-              {/* 1. College Category Select Menu Group Element */}
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">College Type</label>
                 <select
@@ -347,7 +350,6 @@ export default function MentorsPage() {
                 </select>
               </div>
 
-              {/* 2. Dependent Cascading Specific College Dialog Picker Option */}
               {filterCollegeType && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Select College</label>
@@ -363,7 +365,6 @@ export default function MentorsPage() {
                 </motion.div>
               )}
 
-              {/* 3. Global Indian States Selector Block Group */}
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">State Location</label>
                 <select
@@ -377,15 +378,14 @@ export default function MentorsPage() {
                 </select>
               </div>
 
-              {/* 4. Branch Domain Selection Array Input Map */}
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Branch Domain</label>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Department</label>
                 <select
                   value={filterBranch} onChange={e => setFilterBranch(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
                 >
-                  <option value="">All Branches</option>
-                  {['Computer Science', 'Electronics', 'Mechanical', 'Electrical', 'IT', 'Aerospace', 'Civil', 'Software'].map(b => (
+                  <option value="">All Departments</option>
+                  {DEPARTMENTS.map(b => (
                     <option key={b} value={b}>{b}</option>
                   ))}
                 </select>
@@ -399,7 +399,6 @@ export default function MentorsPage() {
             </div>
           </motion.aside>
 
-          {/* Grid Render Window Panel Wrapper Context */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm text-slate-500">
