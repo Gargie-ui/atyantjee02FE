@@ -526,23 +526,22 @@ export default function LaunchpadPage({ activeTab, onTabChange }) {
       <Hero activeTab={activeTab} onTabChange={onTabChange} />
 
       {/* 2. The 3 biggest mistakes — emotional hook (fears they already have) */}
-      {/* RegretSection = real student regret stories (4 cards) */}
-      {/* WhatNobody = hidden truths about college decisions */}
       <RegretSection />
 
       {/* Bridge: seen the mistakes, now name your specific confusion */}
       <DecisionEngine />
 
+      {/* 5. Pricing — lowest barrier first, integrated early bird */}
+      <PricingSection />
       <WhatNobody />
-      {/* Blue fade */}
 
       {/* 3. The Gamified Launchpad Bento Grid (Replaces 5 long sections) */}
       <GamifiedBentoSection />
 
-      {/* 6. Pricing — lowest barrier first, integrated early bird */}
-      <PricingSection />
+      {/* 4. Success Stories*/}
+      <StoriesSection />
 
-      {/* 7. Final CTA — one action only, FAQ clears last objections first */}
+      
       <FAQSection />
       <FinalCTA />
     </main>

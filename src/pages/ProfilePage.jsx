@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserMe, updateUser } from '../utils/api';
+import { ALL_INDIAN_STATES,POPULAR_LANGUAGES,COLLEGES_BY_TYPE } from '../data/siteContent';
+
+
 
 const AVAILABLE_BUNDLES = [
   {
@@ -62,15 +65,6 @@ const AVAILABLE_BUNDLES = [
   },
 ];
 
-const INDIAN_STATES = [
-  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
-  "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa",
-  "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka",
-  "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
-  "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
-  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
-];
-
 export default function ProfilePage({ user, setUser }) {
   const navigate = useNavigate();
 
@@ -79,21 +73,49 @@ export default function ProfilePage({ user, setUser }) {
   const [success, setSuccess] = useState('');
 
   const [name, setName] = useState('');
+  
+  // Mentor-specific Profile Fields State
+  const [collegeType, setCollegeType] = useState('');
   const [college, setCollege] = useState('');
+  const [branch, setBranch] = useState('');
+  const [cgpa, setCgpa] = useState('');
   const [state, setState] = useState('');
   const [rank, setRank] = useState('');
+  const [category, setCategory] = useState('');
+  const [categoryRank, setCategoryRank] = useState('');
+  const [preferredLang, setPreferredLang] = useState('');
+  const [gender, setGender] = useState('');
   const [bundles, setBundles] = useState([]);
   const [bio, setBio] = useState('');
+
+  // Dynamically reset college selection if type parameter alterations manifest
+  const activeCollegeList = useMemo(() => {
+    if (!collegeType) return [];
+    return COLLEGES_BY_TYPE[collegeType] || [];
+  }, [collegeType]);
 
   useEffect(() => {
     if (user) {
       setName(user.name || '');
       if (user.role === 'mentor') {
-        setCollege(user.college || '');
+        // Attempt to determine category type index configuration from value string
+        if (user.college) {
+          const matchedType = Object.keys(COLLEGES_BY_TYPE).find(type => 
+            COLLEGES_BY_TYPE[type].includes(user.college)
+          );
+          setCollegeType(matchedType || 'OTHERS');
+          setCollege(user.college);
+        }
+        
+        setBranch(user.branch || '');
+        setCgpa(user.cgpa || '');
         setState(user.state || '');
         setRank(user.rank || '');
+        setCategory(user.category || 'General');
+        setCategoryRank(user.categoryRank || '');
+        setPreferredLang(user.preferredLang || '');
+        setGender(user.gender || '');
         
-        // Map old bundle names to new IDs if they exist in DB
         const mappedBundles = (user.bundles || []).map(b => {
           if (b === 'Quick Clarity') return 'quick-clarity';
           if (b === 'Complete Guidance') return 'complete-guidance';
@@ -101,11 +123,9 @@ export default function ProfilePage({ user, setUser }) {
           return b;
         });
         setBundles(mappedBundles);
-        
         setBio(user.bio || '');
       }
     } else if (!localStorage.getItem('user_token')) {
-      // Not logged in and no token exists, redirect
       navigate('/login');
     }
   }, [user, navigate]);
@@ -132,8 +152,14 @@ export default function ProfilePage({ user, setUser }) {
       const payload = { name };
       if (user.role === 'mentor') {
         payload.college = college;
+        payload.branch = branch;
+        payload.cgpa = cgpa || undefined;
         payload.state = state;
         payload.rank = rank;
+        payload.category = category;
+        payload.categoryRank = categoryRank || undefined;
+        payload.preferredLang = preferredLang;
+        payload.gender = gender;
         payload.bundles = bundles;
         payload.bio = bio;
       }
@@ -159,7 +185,7 @@ export default function ProfilePage({ user, setUser }) {
             <p className="text-slate-500 mt-1 capitalize font-medium">{user.role} Account</p>
           </div>
           <button
-            onClick={handleLogout}
+            type="button" onClick={handleLogout}
             className="px-4 py-2 text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition"
           >
             Logout
@@ -170,88 +196,189 @@ export default function ProfilePage({ user, setUser }) {
         {success && <div className="mb-6 p-4 bg-green-50 text-green-600 rounded-xl text-sm font-medium border border-green-100">{success}</div>}
 
         <form onSubmit={handleSave} className="space-y-6">
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1">Full Name</label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
-            />
+          {/* Identity Parameters Group */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Full Name</label>
+              <input
+                type="text" required value={name} onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
+              />
+            </div>
+
+            {user.role === 'mentor' && (
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Gender</label>
+                <select
+                  required value={gender} onChange={(e) => setGender(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white h-[50px]"
+                >
+                  <option value="" disabled>Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            )}
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
-            <input
-              type="text"
-              disabled
-              value={user.phone}
-              placeholder='N/A'
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
-            <input
-              type="email"
-              disabled
-              value={user.email}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
+              <input
+                type="text" disabled value={user.phone || ''} placeholder='N/A'
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
+              <input
+                type="email" disabled value={user.email || ''}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+              />
+            </div>
           </div>
 
+          {/* ── MENTOR SPECIFIC EXTENSIONS ── */}
           {user.role === 'mentor' && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* College Mapping Grid Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">College</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">College Type</label>
+                  <select
+                    required value={collegeType} onChange={(e) => { setCollegeType(e.target.value); setCollege(''); }}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white"
+                  >
+                    <option value="" disabled>Select Type</option>
+                    <option value="IIT">IIT</option>
+                    <option value="NIT">NIT</option>
+                    <option value="IIIT">IIIT</option>
+                    <option value="STATE GOV.">STATE GOV.</option>
+                    <option value="PRIVATE">PRIVATE</option>
+                    <option value="OTHERS">OTHERS</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">College Name</label>
+                  <select
+                    required disabled={!collegeType} value={college} onChange={(e) => setCollege(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white disabled:opacity-60"
+                  >
+                    <option value="">{collegeType ? 'Select College Name' : 'Choose College Type First'}</option>
+                    {activeCollegeList.map(name => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                    {collegeType === 'OTHERS' && <option value="Other Unlisted Institute">Other Unlisted Institute</option>}
+                  </select>
+                </div>
+              </div>
+
+              {/* Academics Track Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Branch Domain</label>
+                  <select
+                    required value={branch} onChange={(e) => setBranch(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white"
+                  >
+                    <option value="" disabled>Select Branch</option>
+                    <option value="Computer Science">Computer Science / IT / AI</option>
+                    <option value="Electronics">Electronics & Communication (ECE)</option>
+                    <option value="Electrical">Electrical Engineering</option>
+                    <option value="Mechanical">Mechanical Engineering</option>
+                    <option value="Civil">Civil Engineering</option>
+                    <option value="Chemical">Chemical Engineering</option>
+                    <option value="Commerce / Finance">Commerce / Finance / Economics</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">CGPA (Optional)</label>
                   <input
-                    type="text"
-                    value={college}
-                    onChange={(e) => setCollege(e.target.value)}
-                    placeholder="e.g. IIT Bombay"
+                    type="number" step="0.01" min="0" max="10" value={cgpa} onChange={(e) => setCgpa(e.target.value)} placeholder="e.g. 8.45"
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
                   />
                 </div>
+              </div>
+
+              {/* Counselling Parameters Section Group */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">State / HomeTown</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Home State / Hometown</label>
                   <select
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
+                    required value={state} onChange={(e) => setState(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white"
                   >
                     <option value="">Select your state...</option>
-                    {INDIAN_STATES.map(s => (
+                    {ALL_INDIAN_STATES.map(s => (
                       <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Preferred Language</label>
+                  <select
+                    required value={preferredLang} onChange={(e) => setPreferredLang(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white"
+                  >
+                    <option value="" disabled>Select Language</option>
+                    {POPULAR_LANGUAGES.map(lang => (
+                      <option key={lang} value={lang}>{lang}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">JEE Rank (General/CRL)</label>
-                <input
-                  type="number"
-                  value={rank}
-                  onChange={(e) => setRank(e.target.value)}
-                  placeholder="e.g. 1500"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
-                />
+              {/* Ranks & Categories */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">JEE Rank (CRL)</label>
+                  <input
+                    type="number" required value={rank} onChange={(e) => setRank(e.target.value)} placeholder="e.g. 1500"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Admission Category</label>
+                  <select
+                    required value={category} onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white"
+                  >
+                    <option value="General">General / OPEN</option>
+                    <option value="OBC-NCL">OBC-NCL</option>
+                    <option value="EWS">EWS</option>
+                    <option value="SC">SC</option>
+                    <option value="ST">ST</option>
+                    <option value="PwD">PwD</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Category Rank (Optional)</label>
+                  <input
+                    type="number" value={categoryRank} onChange={(e) => setCategoryRank(e.target.value)} placeholder="e.g. 420"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
+                  />
+                </div>
               </div>
 
+              {/* Bio Pitch text */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Your Pitch / Bio / One Liner</label>
-                <p className="text-xs text-slate-500 mb-2 leading-relaxed">Students come to you for one big decision — which college and branch to pick with their JEE rank. Write a short pitch telling them why you're the right mentor to guide that choice.</p>
+                <p className="text-xs text-slate-500 mb-2 leading-relaxed">Students come to you for one big decision — which college and branch to pick with their rank. Write a short pitch telling them why you're the right mentor to guide that choice.</p>
                 <textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
+                  value={bio} onChange={(e) => setBio(e.target.value)}
                   placeholder="NIT Trichy CSE, AIR 1,800. I'll help you pick the right college-branch combo for your rank — no generic advice, just what actually worked."
                   rows={4}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition resize-none"
                 />
               </div>
 
+              {/* Product Bundles Configuration Node Loop */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Bundles You Offer</label>
                 <p className="text-xs text-slate-500 mb-4">Select the packages you are comfortable delivering. Students will book you based on what you offer.</p>
@@ -260,15 +387,13 @@ export default function ProfilePage({ user, setUser }) {
                     const isSelected = bundles.includes(b.id);
                     return (
                       <div
-                        key={b.id}
-                        onClick={() => handleBundleToggle(b.id)}
+                        key={b.id} onClick={() => handleBundleToggle(b.id)}
                         className={`relative flex gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
                           isSelected
                             ? 'border-[#FF6B2B] bg-[#FF6B2B]/5 shadow-md shadow-[#FF6B2B]/10'
                             : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
                         }`}
                       >
-                        {/* Checkbox */}
                         <div className="flex-shrink-0 pt-0.5">
                           <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                             isSelected ? 'bg-[#FF6B2B] border-[#FF6B2B]' : 'border-slate-300'
@@ -281,9 +406,7 @@ export default function ProfilePage({ user, setUser }) {
                           </div>
                         </div>
 
-                        {/* Content */}
                         <div className="flex-1 min-w-0">
-                          {/* Header row */}
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-base font-black text-[#0B0F2E]">
@@ -298,20 +421,14 @@ export default function ProfilePage({ user, setUser }) {
                             <div className="text-right flex-shrink-0">
                               <div className="flex items-baseline gap-1.5">
                                 <span className="text-lg font-black text-[#0B0F2E]">₹{b.price}</span>
-                                {b.originalPrice && (
-                                  <span className="text-sm text-slate-400 line-through">₹{b.originalPrice}</span>
-                                )}
+                                {b.originalPrice && <span className="text-sm text-slate-400 line-through">₹{b.originalPrice}</span>}
                               </div>
-                              {b.discount && (
-                                <span className="text-[10px] font-bold text-[#FF6B2B]">{b.discount}</span>
-                              )}
+                              {b.discount && <span className="text-[10px] font-bold text-[#FF6B2B]">{b.discount}</span>}
                             </div>
                           </div>
 
-                          {/* Best for */}
                           <p className="text-xs text-slate-500 mb-3 leading-relaxed italic">{b.desc}</p>
 
-                          {/* Includes */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
                             {b.includes.map(item => (
                               <div key={item} className="flex items-start gap-1.5 text-[11px] text-slate-600">
@@ -321,7 +438,6 @@ export default function ProfilePage({ user, setUser }) {
                             ))}
                           </div>
 
-                          {/* Your commitment note */}
                           <div className={`mt-3 text-[11px] px-3 py-2 rounded-lg font-medium ${
                             isSelected ? 'bg-[#FF6B2B]/10 text-[#FF6B2B]' : 'bg-slate-100 text-slate-500'
                           }`}>
@@ -338,8 +454,7 @@ export default function ProfilePage({ user, setUser }) {
 
           <div className="pt-4 border-t border-slate-100">
             <button
-              type="submit"
-              disabled={loading}
+              type="submit" disabled={loading}
               className="w-full md:w-auto px-8 py-3.5 rounded-xl bg-[#0B0F2E] text-white font-black hover:bg-[#12183f] transition-all disabled:opacity-70 shadow-lg shadow-[#0B0F2E]/20"
             >
               {loading ? 'Saving...' : 'Save Profile Changes'}

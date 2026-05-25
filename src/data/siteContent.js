@@ -4,11 +4,52 @@ const _override = (() => {
   try { return JSON.parse(localStorage.getItem('siteContentOverride') || 'null'); } catch { return null; }
 })();
 
+export const COLLEGES_BY_TYPE = {
+  IIT: [
+    "IIT Bombay", "IIT Delhi", "IIT Madras", "IIT Kanpur", "IIT Kharagpur", 
+    "IIT Roorkee", "IIT Guwahati", "IIT Hyderabad", "IIT BHU Varanasi", 
+    "IIT Indore", "IIT Ropar", "IIT Mandi", "IIT Gandhinagar", "IIT Patna"
+  ],
+  NIT: [
+    "NIT Trichy", "NIT Karnataka (Surathkal)", "NIT Rourkela", "MNNIT Allahabad", 
+    "VNIT Nagpur", "NIT Warangal", "NIT Calicut", "NIT Silchar", "NIT Durgapur", 
+    "NIT Jamshedpur", "NIT Kurukshetra", "MANIT Bhopal", "MNIT Jaipur"
+  ],
+  IIIT: [
+    "IIIT Hyderabad", "IIIT Bangalore", "IIIT Delhi", "IIIT Allahabad", 
+    "IIITM Gwalior", "IIIT DM Jabalpur", "IIIT Pune", "IIIT Nagpur", 
+    "IIIT Lucknow", "IIIT Sri City", "IIIT Vadodara", "IIIT Kota"
+  ],
+  "STATE GOV.": [
+    "COEP Tech Pune", "VJTI Mumbai", "ICT Mumbai", "Jadavpur University", 
+    "College of Engineering Guindy", "DTU Delhi", "NSUT Delhi", "HBTU Kanpur", 
+    "IET Lucknow", "BIT Sindri", "SGSITS Indore", "JEC Jabalpur"
+  ],
+  PRIVATE: [
+    "BITS Pilani", "BITS Goa", "BITS Hyderabad", "VIT Vellore", "MIT Manipal", 
+    "Thapar University", "RVCE Bangalore", "BMSCE Bangalore", "MSRIT Bangalore", 
+    "Amrita Vishwa Vidyapeetham", "SRM University", "DA-IICT", "LNMIIT Jaipur"
+  ],
+  OTHERS: [
+    "PEC Chandigarh", "BIT Mesra", "IIST Thiruvananthapuram", "RGIPT Jais", 
+    "IEM Kolkata", "Nirma University", "KIIT Bhubaneswar"
+  ]
+};
+export const POPULAR_LANGUAGES = ["English", "Hindi", "Marathi", "Telugu", "Tamil", "Bengali", "Gujarati", "Kannada"];
+export const ALL_INDIAN_STATES = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
+  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram",
+  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
+  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Delhi", "Chandigarh", "Jammu and Kashmir", "Puducherry"
+];
+
 export const navLinks = _override?.navLinks ?? [
-  { label: 'How it Works', href: '#how-it-works' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'Success Stories', href: '#stories' },
-  { label: 'FAQ', href: '#faq' },
+  { label: 'How it Works', href: '/#how-it-works' }, 
+  { label: 'Pricing', href: '/#pricing' },           
+  { label: 'Success Stories', href: '/#stories' },   
+  { label: 'FAQ', href: '/#faq' },                   
 ];
 
 export const heroTrustBadges = _override?.heroTrustBadges ?? ['12,000+ Students Guided', '100+ Colleges Covered', '4.9 Rating'];

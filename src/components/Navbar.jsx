@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+// 1. Import HashLink here
+import { HashLink } from 'react-router-hash-link'; 
 import { navLinks } from '../data/siteContent';
 
 import { GraduationCap } from 'lucide-react';
@@ -38,9 +40,14 @@ export default function Navbar({ onLeadClick, activeTab, onTabChange, user }) {
           </button>
 
           {navLinks.map((link) => (
-            <a key={link.label} href={link.href} className="text-sm font-medium text-white hover:text-[#FF6B2B] transition">
+            <HashLink 
+              smooth 
+              key={link.label} 
+              to={link.href} 
+              className="text-sm font-medium text-white hover:text-[#FF6B2B] transition"
+            >
               {link.label}
-            </a>
+            </HashLink>
           ))}
         </nav>
 
