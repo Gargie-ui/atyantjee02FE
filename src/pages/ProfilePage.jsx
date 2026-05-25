@@ -1,6 +1,6 @@
 import React, { useRef,useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ALL_INDIAN_STATES,POPULAR_LANGUAGES,COLLEGES_BY_TYPE } from '../data/siteContent';
+import { ALL_INDIAN_STATES,POPULAR_LANGUAGES,COLLEGES_BY_TYPE,DEPARTMENTS } from '../data/siteContent';
 import { getUserMe, updateUser, uploadProfilePhoto, uploadIdDoc, getMyBookings, deleteIdDoc, verifyPayment } from '../utils/api';
 import API_BASE from '../utils/api';
 import { getDetailedWhatsAppLink } from '../utils/whatsapp';
@@ -78,7 +78,9 @@ export default function ProfilePage({ user, setUser }) {
   // Mentor-specific Profile Fields State
   const [collegeType, setCollegeType] = useState('');
   const [college, setCollege] = useState('');
+  const [customCollege, setCustomCollege] = useState(''); // State to hold custom typed college name
   const [branch, setBranch] = useState('');
+  const [customBranch, setCustomBranch] = useState(''); // State to hold custom typed department/branch name
   const [cgpa, setCgpa] = useState('');
   const [state, setState] = useState('');
   const [rank, setRank] = useState('');
@@ -180,11 +182,30 @@ export default function ProfilePage({ user, setUser }) {
           const matchedType = Object.keys(COLLEGES_BY_TYPE).find(type => 
             COLLEGES_BY_TYPE[type].includes(user.college)
           );
-          setCollegeType(matchedType || 'OTHERS');
-          setCollege(user.college);
+          if (matchedType) {
+            setCollegeType(matchedType);
+            setCollege(user.college);
+            setCustomCollege('');
+          } else {
+            // Value is not in our predefined static lists, treat as custom manual input
+            setCollegeType('OTHERS');
+            setCollege('OTHER_MANUAL');
+            setCustomCollege(user.college);
+          }
         }
         
-        setBranch(user.branch || '');
+        if (user.branch) {
+          if (DEPARTMENTS.includes(user.branch)) {
+            setBranch(user.branch);
+            setCustomBranch('');
+          } else {
+            setBranch('OTHER_MANUAL');
+            setCustomBranch(user.branch);
+          }
+        } else {
+          setBranch('');
+          setCustomBranch('');
+        }
         setCgpa(user.cgpa || '');
         setState(user.state || '');
         setCategory(user.category || '');
@@ -237,13 +258,12 @@ export default function ProfilePage({ user, setUser }) {
     try {
       const payload = { name };
       if (user.role === 'mentor') {
-        payload.college = college;
-        payload.branch = branch;
+        payload.college = college === 'OTHER_MANUAL' ? customCollege : college;
+        payload.branch = branch === 'OTHER_MANUAL' ? customBranch : branch;
         payload.cgpa = cgpa || undefined;
         payload.state = state;
         payload.category = category;
         payload.rank = rank;
-        payload.category = category;
         payload.categoryRank = categoryRank || undefined;
         payload.preferredLang = preferredLang;
         payload.gender = gender;
@@ -470,7 +490,7 @@ export default function ProfilePage({ user, setUser }) {
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">College Type</label>
                   <select
-                    required value={collegeType} onChange={(e) => { setCollegeType(e.target.value); setCollege(''); }}
+                    required value={collegeType} onChange={(e) => { setCollegeType(e.target.value); setCollege(''); setCustomCollege(''); }}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white"
                   >
                     <option value="" disabled>Select Type</option>
@@ -486,34 +506,60 @@ export default function ProfilePage({ user, setUser }) {
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">College Name</label>
                   <select
-                    required disabled={!collegeType} value={college} onChange={(e) => setCollege(e.target.value)}
+                    required disabled={!collegeType} value={college} onChange={(e) => {
+                      setCollege(e.target.value);
+                      if (e.target.value !== 'OTHER_MANUAL') {
+                        setCustomCollege('');
+                      }
+                    }}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white disabled:opacity-60"
                   >
                     <option value="">{collegeType ? 'Select College Name' : 'Choose College Type First'}</option>
                     {activeCollegeList.map(name => (
                       <option key={name} value={name}>{name}</option>
                     ))}
-                    {collegeType === 'OTHERS' && <option value="Other Unlisted Institute">Other Unlisted Institute</option>}
+                    {collegeType && (
+                      <option value="OTHER_MANUAL">Other / Not Listed (Type Manually)</option>
+                    )}
                   </select>
                 </div>
               </div>
 
+              {college === 'OTHER_MANUAL' && (
+                <div className="mt-4 animate-fadeIn p-5 bg-orange-50/20 border-2 border-dashed border-[#FF6B2B]/20 rounded-2xl">
+                  <label className="block text-sm font-bold text-slate-700 mb-1">
+                    Type Your College Name <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-[11px] text-slate-500 mb-3">Please type the full official name of your institution (e.g. Harcourt Butler Technical University, Kanpur).</p>
+                  <input
+                    type="text"
+                    required
+                    value={customCollege}
+                    onChange={(e) => setCustomCollege(e.target.value)}
+                    placeholder="e.g. Harcourt Butler Technical University, Kanpur"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#FF6B2B] focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/20 transition bg-white"
+                  />
+                </div>
+              )}
+
               {/* Academics Track Fields */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-slate-700 mb-1">Branch Domain</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
                   <select
-                    required value={branch} onChange={(e) => setBranch(e.target.value)}
+                    required value={branch} onChange={(e) => {
+                      setBranch(e.target.value);
+                      if (e.target.value !== 'OTHER_MANUAL') {
+                        setCustomBranch('');
+                      }
+                    }}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white"
                   >
-                    <option value="" disabled>Select Branch</option>
-                    <option value="Computer Science">Computer Science / IT / AI</option>
-                    <option value="Electronics">Electronics & Communication (ECE)</option>
-                    <option value="Electrical">Electrical Engineering</option>
-                    <option value="Mechanical">Mechanical Engineering</option>
-                    <option value="Civil">Civil Engineering</option>
-                    <option value="Chemical">Chemical Engineering</option>
-                    <option value="Commerce / Finance">Commerce / Finance / Economics</option>
+                    <option value="" disabled>Select Department</option>
+                    {DEPARTMENTS.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                    <option value="OTHER_MANUAL">Other: (Type Manually)</option>
                   </select>
                 </div>
 
@@ -525,6 +571,23 @@ export default function ProfilePage({ user, setUser }) {
                   />
                 </div>
               </div>
+
+              {branch === 'OTHER_MANUAL' && (
+                <div className="mt-4 animate-fadeIn p-5 bg-orange-50/20 border-2 border-dashed border-[#FF6B2B]/20 rounded-2xl">
+                  <label className="block text-sm font-bold text-slate-700 mb-1">
+                    Type Your Department / Branch <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-[11px] text-slate-500 mb-3">Please type the name of your department or specialized branch (e.g. Industrial Design / Materials Science).</p>
+                  <input
+                    type="text"
+                    required
+                    value={customBranch}
+                    onChange={(e) => setCustomBranch(e.target.value)}
+                    placeholder="e.g. Industrial Design / Materials Science"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#FF6B2B] focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/20 transition bg-white"
+                  />
+                </div>
+              )}
 
               {/* Counselling Parameters Section Group */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
