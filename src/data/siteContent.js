@@ -3,7 +3,6 @@ import { Clock3, GraduationCap, HeartHandshake, School2, ShieldCheck, Sparkles, 
 const _override = (() => {
   try { return JSON.parse(localStorage.getItem('siteContentOverride') || 'null'); } catch { return null; }
 })();
-
 export const COLLEGES_BY_TYPE = {
   IIT: [
     "IIT Bombay",
@@ -59,9 +58,10 @@ export const COLLEGES_BY_TYPE = {
     "NIT Nagaland",
     "NIT Arunachal Pradesh",
     "NIT Puducherry",
-    "NIT Andhra Pradesh Yupia",
+    "NIT Andhra Pradesh", // Fixed location tag typo
     "SVNIT Surat",
-    "NIT Delhi"
+    "NIT Delhi",
+    "IIEST Shibpur" // Added from expected list (JoSAA NIT-Plus cadre)
   ],
   IIIT: [
     "IIIT Hyderabad",
@@ -71,6 +71,7 @@ export const COLLEGES_BY_TYPE = {
     "ABV-IIITM Gwalior",
     "IIITDM Jabalpur",
     "IIITDM Kancheepuram",
+    "IIIT Kancheepuram", // Added missing institute
     "IIIT Pune",
     "IIIT Nagpur",
     "IIIT Lucknow",
@@ -97,9 +98,21 @@ export const COLLEGES_BY_TYPE = {
     "IIIT Bhubaneswar"
   ],
   "STATE GOV.": [
-    "COEP Tech Pune", "VJTI Mumbai", "ICT Mumbai", "Jadavpur University", 
-    "College of Engineering Guindy", "DTU Delhi", "NSUT Delhi", "HBTU Kanpur", 
-    "IET Lucknow", "BIT Sindri", "SGSITS Indore", "JEC Jabalpur"
+    "DTU Delhi", 
+    "NSUT Delhi", 
+    "Jadavpur University", 
+    "COEP Tech Pune", 
+    "VJTI Mumbai", 
+    "ICT Mumbai", 
+    "Anna University / CEG Guindy", 
+    "HBTU Kanpur", 
+    "IET Lucknow", 
+    "BIT Sindri", 
+    "SGSITS Indore", 
+    "JEC Jabalpur",
+    "Andhra University College of Engineering", // Added missing
+    "Osmania University College of Engineering",  // Added missing
+    "JNTU Hyderabad"                             // Added missing
   ],
   PRIVATE: [
     "BITS Pilani", "BITS Goa", "BITS Hyderabad", "VIT Vellore", "MIT Manipal", 
@@ -107,11 +120,23 @@ export const COLLEGES_BY_TYPE = {
     "Amrita Vishwa Vidyapeetham", "SRM University", "DA-IICT", "LNMIIT Jaipur"
   ],
   OTHERS: [
-    "PEC Chandigarh", "BIT Mesra", "IIST Thiruvananthapuram", "RGIPT Jais", 
-    "IEM Kolkata", "Nirma University", "KIIT Bhubaneswar"
+    "PEC Chandigarh", 
+    "BIT Mesra", 
+    "IIST Thiruvananthapuram", 
+    "RGIPT Jais", 
+    "IEM Kolkata", 
+    "Nirma University", 
+    "KIIT Bhubaneswar",
+    "SPA Delhi",               // Added missing CFTI
+    "University of Hyderabad",  // Added missing Central Uni
+    "Tezpur University",       // Added missing Central Uni
+    "SLIET Longowal",          // Added missing CFTI
+    "Other Government Colleges" // Added safe fallback option
   ]
 };
+
 export const POPULAR_LANGUAGES = ["English", "Hindi", "Marathi", "Telugu", "Tamil", "Bengali", "Gujarati", "Kannada"];
+
 export const DEPARTMENTS = [
   "Aerospace / Aeronautical Engineering",
   "Agricultural Engineering",
