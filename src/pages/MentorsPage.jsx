@@ -285,9 +285,12 @@ export default function MentorsPage() {
   const filtered = useMemo(() => {
     let list = mentors.filter(m => {
       // Search by college name or mentor name
-      const matchSearch = !search || 
-        m.college.toLowerCase().includes(search.toLowerCase()) || 
-        m.name.toLowerCase().includes(search.toLowerCase());
+      const searchLower = search.toLowerCase();
+
+      const matchSearch =
+        !search ||
+        (m.college ?? "").toLowerCase().includes(searchLower) ||
+        (m.name ?? "").toLowerCase().includes(searchLower);
 
       let matchType = true;
       if (filterCollegeType) {
@@ -297,8 +300,8 @@ export default function MentorsPage() {
         } else if (filterCollegeType === 'PRIVATE') {
           matchType = ['bits', 'vit', 'manipal', 'thapar', 'srm', 'rvce', 'bmsce', 'msrit', 'lnmiit', 'nirma'].some(x => mentorCollegeLower.includes(x));
         } else {
-          matchType = mentorCollegeLower.includes(filterCollegeType.toLowerCase()) && 
-                     !(filterCollegeType.toLowerCase() === 'iit' && mentorCollegeLower.includes('iiit'));
+          matchType = mentorCollegeLower.includes(filterCollegeType.toLowerCase()) &&
+            !(filterCollegeType.toLowerCase() === 'iit' && mentorCollegeLower.includes('iiit'));
         }
       }
 
