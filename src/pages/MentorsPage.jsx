@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { PaymentModal } from '../components/PricingCard';
-import { getMentors } from '../utils/api';
+import API_BASE, { getMentors } from '../utils/api';
 import { ALL_INDIAN_STATES,COLLEGES_BY_TYPE } from '../data/siteContent';
 // ─── Constants & Dictionaries ──────────────────────────────────────────────
 
@@ -51,7 +51,6 @@ const BUNDLES = [
 
 const BUNDLE_MAP = Object.fromEntries(BUNDLES.map(b => [b.id, b]));
 
-import API_BASE, { getMentors } from '../utils/api';
 
 // ─── Mentor data ───────────────────────────────────────────────────────────
 // We will fetch these from the backend instead of hardcoding.

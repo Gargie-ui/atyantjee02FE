@@ -11,8 +11,6 @@ export default function AuthPage({ setUser }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [phone, setPhone] = useState('');
-
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -26,11 +24,7 @@ export default function AuthPage({ setUser }) {
       if (isLogin) {
         res = await userLogin({ phone, password });
       } else {
-<<<<<<< HEAD
         res = await userSignup({ name, email,phone, password, role });
-=======
-        res = await userSignup({ name, phone, password, role });
->>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
       }
       if (setUser) setUser(res.user);
 

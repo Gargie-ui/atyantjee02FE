@@ -1,16 +1,8 @@
-<<<<<<< HEAD
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useRef,useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserMe, updateUser } from '../utils/api';
 import { ALL_INDIAN_STATES,POPULAR_LANGUAGES,COLLEGES_BY_TYPE } from '../data/siteContent';
-
-
-=======
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getUserMe, updateUser, uploadProfilePhoto, uploadIdDoc, getMyBookings, deleteIdDoc, verifyPayment } from '../utils/api';
 import API_BASE from '../utils/api';
->>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
 
 const AVAILABLE_BUNDLES = [
   {
@@ -87,7 +79,6 @@ export default function ProfilePage({ user, setUser }) {
   const [branch, setBranch] = useState('');
   const [cgpa, setCgpa] = useState('');
   const [state, setState] = useState('');
-  const [category, setCategory] = useState('');
   const [rank, setRank] = useState('');
   const [category, setCategory] = useState('');
   const [categoryRank, setCategoryRank] = useState('');
@@ -331,49 +322,6 @@ export default function ProfilePage({ user, setUser }) {
         {success && <div className="mb-6 p-4 bg-green-50 text-green-600 rounded-xl text-sm font-medium border border-green-100">{success}</div>}
 
         <form onSubmit={handleSave} className="space-y-6">
-<<<<<<< HEAD
-          {/* Identity Parameters Group */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">Full Name</label>
-              <input
-                type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
-              />
-            </div>
-
-            {user.role === 'mentor' && (
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Gender</label>
-                <select
-                  required value={gender} onChange={(e) => setGender(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white h-[50px]"
-                >
-                  <option value="" disabled>Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
-              <input
-                type="text" disabled value={user.phone || ''} placeholder='N/A'
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
-              <input
-                type="email" disabled value={user.email || ''}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
-              />
-            </div>
-=======
           
           {user.role === 'mentor' && (
             <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
@@ -433,16 +381,11 @@ export default function ProfilePage({ user, setUser }) {
               value={user.phone}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
             />
->>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
           </div>
 
           {/* ── MENTOR SPECIFIC EXTENSIONS ── */}
           {user.role === 'mentor' && (
             <>
-<<<<<<< HEAD
-              {/* College Mapping Grid Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-=======
               <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -510,7 +453,6 @@ export default function ProfilePage({ user, setUser }) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
->>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">College Type</label>
                   <select
@@ -599,7 +541,6 @@ export default function ProfilePage({ user, setUser }) {
                 </div>
               </div>
 
-<<<<<<< HEAD
               {/* Ranks & Categories */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
@@ -632,34 +573,6 @@ export default function ProfilePage({ user, setUser }) {
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
                   />
                 </div>
-=======
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">JEE Rank (General/CRL)</label>
-                  <input
-                    type="number"
-                    value={rank}
-                    onChange={(e) => setRank(e.target.value)}
-                    placeholder="e.g. 1500"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">Counselling Category</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white"
-                  >
-                    <option value="">Select Category...</option>
-                    <option value="General">General (Open)</option>
-                    <option value="OBC-NCL">OBC-NCL</option>
-                    <option value="SC">SC</option>
-                    <option value="ST">ST</option>
-                    <option value="Gen-EWS">Gen-EWS</option>
-                  </select>
-                </div>
->>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
               </div>
 
               {/* Bio Pitch text */}
