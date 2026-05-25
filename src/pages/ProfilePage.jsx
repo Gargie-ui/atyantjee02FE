@@ -1,9 +1,16 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserMe, updateUser } from '../utils/api';
 import { ALL_INDIAN_STATES,POPULAR_LANGUAGES,COLLEGES_BY_TYPE } from '../data/siteContent';
 
 
+=======
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getUserMe, updateUser, uploadProfilePhoto, uploadIdDoc, getMyBookings, deleteIdDoc, verifyPayment } from '../utils/api';
+import API_BASE from '../utils/api';
+>>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
 
 const AVAILABLE_BUNDLES = [
   {
@@ -80,6 +87,7 @@ export default function ProfilePage({ user, setUser }) {
   const [branch, setBranch] = useState('');
   const [cgpa, setCgpa] = useState('');
   const [state, setState] = useState('');
+  const [category, setCategory] = useState('');
   const [rank, setRank] = useState('');
   const [category, setCategory] = useState('');
   const [categoryRank, setCategoryRank] = useState('');
@@ -87,6 +95,70 @@ export default function ProfilePage({ user, setUser }) {
   const [gender, setGender] = useState('');
   const [bundles, setBundles] = useState([]);
   const [bio, setBio] = useState('');
+  
+  const [profilePhotoFilename, setProfilePhotoFilename] = useState('');
+  const [verificationStatus, setVerificationStatus] = useState('none');
+  const [idDocFilename, setIdDocFilename] = useState('');
+  const [idDocUploading, setIdDocUploading] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+
+  const [bookings, setBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
+
+  const photoInputRef = useRef(null);
+  const idDocInputRef = useRef(null);
+
+  useEffect(() => {
+    if (user) {
+      setLoadingBookings(true);
+      getMyBookings()
+        .then((res) => {
+          if (res?.bookings) setBookings(res.bookings);
+        })
+        .catch((err) => console.error('Failed to fetch bookings:', err))
+        .finally(() => setLoadingBookings(false));
+    }
+  }, [user]);
+
+  // Cashfree Redirect Payment Verification Hook
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('order_id');
+    if (orderId) {
+      setError('');
+      setSuccess('Verifying payment with Cashfree...');
+      
+      // Clean query parameter immediately from the browser history so refresh doesn't trigger verification again
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+
+      verifyPayment({ cashfreeOrderId: orderId })
+        .then((res) => {
+          setSuccess('Payment verified successfully! Welcome to premium mentorship!');
+          
+          // Re-fetch bookings and user info
+          getUserMe().then(r => {
+            if (r?.user) setUser(r.user);
+          });
+          getMyBookings().then(r => {
+            if (r?.bookings) setBookings(r.bookings);
+          });
+
+          // Perform WhatsApp auto-launch if redirect url exists in localStorage
+          const pendingRedirect = localStorage.getItem('atyant_pending_redirect');
+          if (pendingRedirect) {
+            localStorage.removeItem('atyant_pending_redirect');
+            setTimeout(() => {
+              window.open(pendingRedirect, '_blank');
+            }, 1000);
+          }
+        })
+        .catch((err) => {
+          setError(err.message || 'Payment verification failed. If money was debited, please contact support.');
+          setSuccess('');
+        });
+    }
+  }, [setUser]);
 
   // Dynamically reset college selection if type parameter alterations manifest
   const activeCollegeList = useMemo(() => {
@@ -110,6 +182,7 @@ export default function ProfilePage({ user, setUser }) {
         setBranch(user.branch || '');
         setCgpa(user.cgpa || '');
         setState(user.state || '');
+        setCategory(user.category || '');
         setRank(user.rank || '');
         setCategory(user.category || 'General');
         setCategoryRank(user.categoryRank || '');
@@ -124,6 +197,14 @@ export default function ProfilePage({ user, setUser }) {
         });
         setBundles(mappedBundles);
         setBio(user.bio || '');
+        setProfilePhotoFilename(user.profilePhotoFilename || '');
+        setVerificationStatus(user.verificationStatus || 'none');
+        setIdDocFilename(user.idDocFilename || '');
+        
+        // Show popup if profile is incomplete or verification is pending
+        if (!user.college || !user.rank || user.verificationStatus === 'none') {
+          setError('Please complete your profile and upload your ID document to get verified.');
+        }
       }
     } else if (!localStorage.getItem('user_token')) {
       navigate('/login');
@@ -155,6 +236,7 @@ export default function ProfilePage({ user, setUser }) {
         payload.branch = branch;
         payload.cgpa = cgpa || undefined;
         payload.state = state;
+        payload.category = category;
         payload.rank = rank;
         payload.category = category;
         payload.categoryRank = categoryRank || undefined;
@@ -171,6 +253,59 @@ export default function ProfilePage({ user, setUser }) {
       setError(err.message || 'Failed to update profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPhotoUploading(true);
+    setError('');
+    try {
+      const res = await uploadProfilePhoto(file);
+      setProfilePhotoFilename(res.filename);
+      setSuccess('Profile photo updated successfully!');
+      // Update local user state
+      setUser({ ...user, profilePhotoFilename: res.filename });
+    } catch (err) {
+      setError(err.message || 'Failed to upload photo');
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const handleIdDocUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIdDocUploading(true);
+    setError('');
+    try {
+      const res = await uploadIdDoc(file);
+      setVerificationStatus(res.verificationStatus);
+      if (res.filename) {
+        setIdDocFilename(res.filename);
+      }
+      setSuccess(res.message || 'ID document uploaded successfully!');
+      setUser({ ...user, verificationStatus: res.verificationStatus, idDocFilename: res.filename });
+    } catch (err) {
+      setError(err.message || 'Failed to upload ID document');
+    } finally {
+      setIdDocUploading(false);
+    }
+  };
+
+  const handleDeleteIdDoc = async () => {
+    if (!window.confirm('Are you sure you want to delete your uploaded document?')) return;
+    setError('');
+    setSuccess('');
+    try {
+      const res = await deleteIdDoc();
+      setVerificationStatus(res.verificationStatus);
+      setIdDocFilename('');
+      setSuccess(res.message || 'ID document deleted successfully!');
+      setUser({ ...user, verificationStatus: res.verificationStatus, idDocFilename: '' });
+    } catch (err) {
+      setError(err.message || 'Failed to delete ID document');
     }
   };
 
@@ -196,6 +331,7 @@ export default function ProfilePage({ user, setUser }) {
         {success && <div className="mb-6 p-4 bg-green-50 text-green-600 rounded-xl text-sm font-medium border border-green-100">{success}</div>}
 
         <form onSubmit={handleSave} className="space-y-6">
+<<<<<<< HEAD
           {/* Identity Parameters Group */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -237,13 +373,144 @@ export default function ProfilePage({ user, setUser }) {
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
               />
             </div>
+=======
+          
+          {user.role === 'mentor' && (
+            <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
+              <div className="relative">
+                {profilePhotoFilename ? (
+                  <img 
+                    src={`${API_BASE}/api/upload/profile-photo/${profilePhotoFilename}`} 
+                    alt="Profile" 
+                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-sm"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-3xl font-bold border-4 border-white shadow-sm">
+                    {name ? name.charAt(0).toUpperCase() : 'M'}
+                  </div>
+                )}
+                <button 
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={photoUploading}
+                  className="absolute bottom-0 right-0 bg-[#FF6B2B] text-white p-2 rounded-full shadow-md hover:bg-orange-600 transition"
+                  title="Upload Photo"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                </button>
+                <input 
+                  type="file" 
+                  ref={photoInputRef} 
+                  onChange={handlePhotoUpload} 
+                  accept="image/jpeg, image/png, image/webp" 
+                  className="hidden" 
+                />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="text-lg font-bold text-slate-800">Profile Photo</h3>
+                <p className="text-xs text-slate-500 mt-1">Upload a professional looking photo of yourself. This builds trust with students.</p>
+                {photoUploading && <p className="text-xs text-[#FF6B2B] mt-2 font-medium animate-pulse">Uploading...</p>}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Full Name</label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
+            <input
+              type="tel"
+              disabled
+              value={user.phone}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+            />
+>>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
           </div>
 
           {/* ── MENTOR SPECIFIC EXTENSIONS ── */}
           {user.role === 'mentor' && (
             <>
+<<<<<<< HEAD
               {/* College Mapping Grid Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+=======
+              <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-800">Identity Verification</h3>
+                    <p className="text-xs text-slate-500 mt-1">Upload your College ID or Aadhaar Card to get verified.</p>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    verificationStatus === 'verified' ? 'bg-green-100 text-green-700' :
+                    verificationStatus === 'pending' ? 'bg-amber-100 text-amber-700' :
+                    verificationStatus === 'rejected' ? 'bg-red-100 text-red-700' :
+                    'bg-slate-200 text-slate-600'
+                  }`}>
+                    {verificationStatus.toUpperCase()}
+                  </div>
+                </div>
+                
+                {verificationStatus !== 'verified' && (
+                  <div>
+                    <input 
+                      type="file" 
+                      ref={idDocInputRef} 
+                      onChange={handleIdDocUpload} 
+                      accept="image/jpeg, image/png, application/pdf" 
+                      className="hidden" 
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => idDocInputRef.current?.click()}
+                      disabled={idDocUploading}
+                      className="w-full py-3 bg-white border-2 border-dashed border-blue-300 rounded-xl text-blue-600 font-bold hover:bg-blue-50 transition"
+                    >
+                      {idDocUploading ? 'Uploading...' : 'Select Document to Upload'}
+                    </button>
+                    <p className="text-[10px] text-center text-slate-400 mt-2">Accepted formats: JPG, PNG, PDF. Max size: 10MB.</p>
+                  </div>
+                )}
+
+                {idDocFilename && (
+                  <div className="mt-4 p-3 bg-white rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-sm">📄</span>
+                      <span className="text-xs font-semibold text-slate-700 truncate max-w-[220px]" title={idDocFilename}>
+                        {idDocFilename}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0 ml-4">
+                      <a 
+                        href={`${API_BASE}/api/upload/id-doc/${user.id || user._id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold text-[#FF6B2B] hover:text-orange-600 transition flex items-center gap-1"
+                      >
+                        View Document ↗
+                      </a>
+                      <button
+                        type="button"
+                        onClick={handleDeleteIdDoc}
+                        className="text-xs font-bold text-red-500 hover:text-red-700 transition flex items-center gap-1 border-l border-slate-200 pl-3"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+>>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">College Type</label>
                   <select
@@ -332,6 +599,7 @@ export default function ProfilePage({ user, setUser }) {
                 </div>
               </div>
 
+<<<<<<< HEAD
               {/* Ranks & Categories */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
@@ -364,6 +632,34 @@ export default function ProfilePage({ user, setUser }) {
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
                   />
                 </div>
+=======
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">JEE Rank (General/CRL)</label>
+                  <input
+                    type="number"
+                    value={rank}
+                    onChange={(e) => setRank(e.target.value)}
+                    placeholder="e.g. 1500"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Counselling Category</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition bg-white"
+                  >
+                    <option value="">Select Category...</option>
+                    <option value="General">General (Open)</option>
+                    <option value="OBC-NCL">OBC-NCL</option>
+                    <option value="SC">SC</option>
+                    <option value="ST">ST</option>
+                    <option value="Gen-EWS">Gen-EWS</option>
+                  </select>
+                </div>
+>>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
               </div>
 
               {/* Bio Pitch text */}
@@ -463,6 +759,96 @@ export default function ProfilePage({ user, setUser }) {
         </form>
 
       </div>
+
+      {/* Bookings Section */}
+      <div className="max-w-2xl mx-auto mt-8">
+        {loadingBookings ? (
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100 text-center text-slate-500">
+            <div className="w-6 h-6 border-2 border-[#FF6B2B] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+            Loading purchased packages...
+          </div>
+        ) : (
+          bookings.length > 0 ? (
+            <div className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-xl">🛍️</span>
+                <h3 className="text-lg font-black text-[#0B0F2E]">My Bookings & Purchased Packages</h3>
+              </div>
+              <div className="space-y-4">
+                {bookings.map((booking) => (
+                  <div key={booking._id} className="border border-slate-100 rounded-2xl p-5 hover:border-slate-200 hover:shadow-sm transition-all duration-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-black text-slate-800">{booking.planTitle}</span>
+                          <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full uppercase border border-emerald-100">
+                            Paid
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-1">
+                          Ordered on {new Date(booking.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </div>
+                        <div className="text-xs font-bold text-[#FF6B2B] mt-2">
+                          Amount paid: ₹{booking.amount / 100}
+                        </div>
+                      </div>
+                      
+                      {booking.mentorId ? (
+                        <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100/50">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                            {booking.mentorId.profilePhotoFilename ? (
+                              <img 
+                                src={`${API_BASE}/api/upload/profile-photo/${booking.mentorId.profilePhotoFilename}`} 
+                                alt={booking.mentorId.name} 
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            ) : (
+                              booking.mentorId.name.charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-slate-800">{booking.mentorId.name}</div>
+                            <div className="text-[10px] text-blue-600 font-semibold">{booking.mentorId.college}</div>
+                            <div className="text-[9px] text-slate-400">Rank: AIR {booking.mentorId.rank || 'N/A'}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-slate-400 italic">No specific mentor assigned yet. Support will assign one!</div>
+                      )}
+                    </div>
+                    
+                    <div className="mt-4 flex flex-wrap gap-3 justify-end border-t border-slate-50 pt-3">
+                      <a 
+                        href={`https://wa.me/919579040183?text=Hi+Atyant%2C+I+have+purchased+${encodeURIComponent(booking.planTitle)}+package.+My+booking+ID+is+${booking._id}.+Please+help+me+schedule+my+session.`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-xl bg-[#25D366] text-white text-xs font-bold hover:bg-[#20ba56] transition-all flex items-center gap-1.5 shadow-sm shadow-[#25D366]/10"
+                      >
+                        <span>💬 Connect on WhatsApp</span>
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            user.role !== 'mentor' && (
+              <div className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100 text-center text-slate-500">
+                <span className="text-3xl block mb-2">🎓</span>
+                <p className="text-sm font-semibold text-slate-700">No mentorship sessions purchased yet.</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Get rank-based guidance from NIT/IIT seniors and secure your dream seat today!</p>
+                <button 
+                  onClick={() => navigate('/mentors')}
+                  className="mt-4 px-5 py-2 rounded-xl bg-[#FF6B2B] text-white text-xs font-bold hover:bg-orange-600 transition"
+                >
+                  Browse Mentors & Bundles
+                </button>
+              </div>
+            )
+          )
+        )}
+      </div>
+
     </div>
   );
 }

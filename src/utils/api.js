@@ -113,12 +113,12 @@ export const getDecision = (payload) =>
 
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
-/** Fetch available plans + Razorpay key (public) */
+/** Fetch available plans + Cashfree configuration */
 export const getPaymentPlans = () => request('/api/payments/plans');
 
 /**
- * Create a Razorpay order (public).
- * @param {{ planId, name, email, phone? }} payload
+ * Create a Cashfree order (public).
+ * @param {{ planId, name, email, phone, mentorId? }} payload
  */
 export const createPaymentOrder = (payload) =>
   request('/api/payments/orders', {
@@ -127,8 +127,8 @@ export const createPaymentOrder = (payload) =>
   });
 
 /**
- * Verify a payment after Razorpay checkout (public).
- * @param {{ razorpayOrderId, razorpayPaymentId, razorpaySignature }} payload
+ * Verify a payment after Cashfree checkout (public).
+ * @param {{ cashfreeOrderId }} payload
  */
 export const verifyPayment = (payload) =>
   request('/api/payments/verify', {
@@ -140,6 +140,14 @@ export const verifyPayment = (payload) =>
 export const listPayments = (params = {}) => {
   const qs = new URLSearchParams(params).toString();
   return request(`/api/payments${qs ? `?${qs}` : ''}`, { headers: adminAuthHeader() });
+};
+
+/** User: fetch my paid packages and selected mentors */
+export const getMyBookings = () => {
+  const token = localStorage.getItem('user_token');
+  return request('/api/payments/my-bookings', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
 };
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -201,6 +209,54 @@ export const updateUser = (payload) => {
 };
 
 export const getMentors = () => request('/api/users/mentors');
+
+// ─── Uploads ──────────────────────────────────────────────────────────────────
+
+export const uploadProfilePhoto = async (file) => {
+  const token = localStorage.getItem('user_token');
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const res = await fetch(`${API_BASE}/api/upload/profile-photo`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  
+  let data;
+  try { data = await res.json(); } catch { data = {}; }
+  if (!res.ok) throw new Error(data.error || 'Upload failed');
+  return data;
+};
+
+export const uploadIdDoc = async (file) => {
+  const token = localStorage.getItem('user_token');
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const res = await fetch(`${API_BASE}/api/upload/id-doc`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  
+  let data;
+  try { data = await res.json(); } catch { data = {}; }
+  if (!res.ok) throw new Error(data.error || 'Upload failed');
+  return data;
+};
+
+export const deleteIdDoc = async () => {
+  const token = localStorage.getItem('user_token');
+  const res = await fetch(`${API_BASE}/api/upload/id-doc`, {
+    method: 'DELETE',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  let data;
+  try { data = await res.json(); } catch { data = {}; }
+  if (!res.ok) throw new Error(data.error || 'Delete failed');
+  return data;
+};
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 

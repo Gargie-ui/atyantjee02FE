@@ -7,7 +7,7 @@ export default function AuthPage({ setUser }) {
   const [role, setRole] = useState('student');
 
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,9 +24,13 @@ export default function AuthPage({ setUser }) {
     try {
       let res;
       if (isLogin) {
-        res = await userLogin({ email, password });
+        res = await userLogin({ phone, password });
       } else {
+<<<<<<< HEAD
         res = await userSignup({ name, email,phone, password, role });
+=======
+        res = await userSignup({ name, phone, password, role });
+>>>>>>> 7eeb3a39ce4fc0c00fb2b56dfaad9232e5af4fca
       }
       if (setUser) setUser(res.user);
 
@@ -98,13 +102,15 @@ export default function AuthPage({ setUser }) {
           )}
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
             <input
-              type="email"
+              type="tel"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              pattern="[0-9]{10}"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="9876543210"
+              title="Please enter exactly 10 digits"
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition"
             />
           </div>
