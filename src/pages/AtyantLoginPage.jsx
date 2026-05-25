@@ -12,7 +12,11 @@ import {
   listChatSessions,
   listMentorsAdmin,
   deleteUserAdmin,
+  viewIdDocAdmin,
+  verifyIdDocAdmin,
+  rejectIdDocAdmin,
 } from '../utils/api';
+
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -349,6 +353,34 @@ function MentorsTab() {
     }
   }
 
+  async function handleViewDoc(mentorId) {
+    try {
+      await viewIdDocAdmin(mentorId);
+    } catch (e) {
+      alert(e.message || 'Error viewing ID document');
+    }
+  }
+
+  async function handleVerifyDoc(mentorId, name) {
+    if (!window.confirm(`Approve and verify the identity document for "${name}"?`)) return;
+    try {
+      await verifyIdDocAdmin(mentorId);
+      fetchMentors();
+    } catch (e) {
+      alert(e.message || 'Error verifying document');
+    }
+  }
+
+  async function handleRejectDoc(mentorId, name) {
+    if (!window.confirm(`Reject the identity document for "${name}"?`)) return;
+    try {
+      await rejectIdDocAdmin(mentorId);
+      fetchMentors();
+    } catch (e) {
+      alert(e.message || 'Error rejecting document');
+    }
+  }
+
   const filtered = React.useMemo(() => {
     if (!search) return mentors;
     const q = search.toLowerCase();
@@ -392,6 +424,7 @@ function MentorsTab() {
                 <th className="px-3 py-2 text-left">Phone</th>
                 <th className="px-3 py-2 text-left">College & Branch</th>
                 <th className="px-3 py-2 text-left">State</th>
+                <th className="px-3 py-2 text-left">Identity Doc</th>
                 <th className="px-3 py-2 text-left">Date Joined</th>
                 <th className="px-3 py-2 text-left">Actions</th>
               </tr>
@@ -410,6 +443,52 @@ function MentorsTab() {
                     <div className="text-[11px] text-gray-400 truncate">{m.branch || '—'}</div>
                   </td>
                   <td className="px-3 py-2 text-gray-500">{m.state || '—'}</td>
+                  
+                  <td className="px-3 py-2">
+                    {m.idDocFilename ? (
+                      <div className="flex flex-col gap-1.5 max-w-[150px]">
+                        <button
+                          onClick={() => handleViewDoc(m._id || m.id)}
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 transition-all text-center w-full justify-center"
+                        >
+                          📄 View ID Doc
+                        </button>
+                        
+                        <div className="flex items-center justify-between gap-1">
+                          <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${
+                            m.verificationStatus === 'verified' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                            m.verificationStatus === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse' :
+                            m.verificationStatus === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                            'bg-slate-50 text-slate-600 border-slate-200'
+                          }`}>
+                            {m.verificationStatus || 'none'}
+                          </span>
+
+                          {m.verificationStatus === 'pending' && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleVerifyDoc(m._id || m.id, m.name || m.username)}
+                                title="Approve Verification"
+                                className="p-1 text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white rounded transition font-bold leading-none shrink-0"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                onClick={() => handleRejectDoc(m._id || m.id, m.name || m.username)}
+                                title="Reject Verification"
+                                className="p-1 text-[10px] bg-red-500 hover:bg-red-600 text-white rounded transition font-bold leading-none shrink-0"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">Not Uploaded</span>
+                    )}
+                  </td>
+
                   <td className="px-3 py-2 text-gray-400 whitespace-nowrap">
                     {m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '—'}
                   </td>

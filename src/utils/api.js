@@ -266,6 +266,36 @@ export const deleteIdDoc = async () => {
   return data;
 };
 
+// Admin ID Document Verification Operations
+export const viewIdDocAdmin = async (mentorId) => {
+  const token = localStorage.getItem('admin_token');
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const res = await fetch(`${API_BASE}/api/upload/id-doc/${mentorId}`, {
+    headers
+  });
+  if (!res.ok) {
+    let errData;
+    try { errData = await res.json(); } catch { errData = {}; }
+    throw new Error(errData.error || `Failed to fetch document: ${res.status}`);
+  }
+  const blob = await res.blob();
+  const fileUrl = window.URL.createObjectURL(blob);
+  window.open(fileUrl, '_blank');
+};
+
+export const verifyIdDocAdmin = (mentorId) =>
+  request(`/api/upload/id-doc/${mentorId}/verify`, {
+    method: 'PATCH',
+    headers: adminAuthHeader()
+  });
+
+export const rejectIdDocAdmin = (mentorId) =>
+  request(`/api/upload/id-doc/${mentorId}/reject`, {
+    method: 'PATCH',
+    headers: adminAuthHeader()
+  });
+
+
 // ─── Health ───────────────────────────────────────────────────────────────────
 
 export const healthCheck = () => request('/health');

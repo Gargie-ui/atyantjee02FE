@@ -39,11 +39,7 @@ export default function AuthPage({ setUser }) {
       if (pendingBooking && res.user.role === 'student') {
         navigate('/mentors');
       } else {
-        if (isLogin) {
-          navigate(res.user.role === 'mentor' ? '/profile' : '/');
-        } else {
-          navigate('/profile');
-        }
+        navigate(res.user.role === 'mentor' ? '/profile' : '/');
       }
 
     } catch (err) {

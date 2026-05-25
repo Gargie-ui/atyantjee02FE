@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// 1. Import HashLink here
 import { HashLink } from 'react-router-hash-link'; 
 import { navLinks } from '../data/siteContent';
-
 import { GraduationCap } from 'lucide-react';
+import API_BASE from '../utils/api';
 
 export default function Navbar({ onLeadClick, activeTab, onTabChange, user }) {
   return (
@@ -63,8 +62,20 @@ export default function Navbar({ onLeadClick, activeTab, onTabChange, user }) {
         {/* Buttons - Right */}
         <div className="flex flex-1 items-center justify-end gap-3">
           {user ? (
-            <Link to="/profile" className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 border-2 border-slate-700 text-sm font-bold text-white transition hover:border-[#FF6B2B]">
-              {user.name.charAt(0).toUpperCase()}
+            <Link 
+              to="/profile" 
+              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-[#FF6B2B] to-[#FF8E53] text-sm font-black text-white transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#FF6B2B]/40 ring-2 ring-white/15 border border-[#FF6B2B] hover:border-white/40 overflow-hidden"
+              title="View Profile"
+            >
+              {user.profilePhotoFilename ? (
+                <img 
+                  src={`${API_BASE}/api/upload/profile-photo/${user.profilePhotoFilename}`} 
+                  alt={user.name} 
+                  className="h-full w-full object-cover rounded-full"
+                />
+              ) : (
+                <span className="drop-shadow-sm">{user.name.charAt(0).toUpperCase()}</span>
+              )}
             </Link>
           ) : (
             <Link to="/login" className="inline-flex items-center rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-[#FF6B2B]">
