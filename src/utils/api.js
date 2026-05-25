@@ -69,6 +69,14 @@ export const updateLead = (id, data) =>
 export const deleteLead = (id) =>
   request(`/api/leads/${id}`, { method: 'DELETE', headers: adminAuthHeader() });
 
+/** Admin: list all registered mentors */
+export const listMentorsAdmin = () =>
+  request('/api/admin/mentors', { headers: adminAuthHeader() });
+
+/** Admin: delete any user or mentor account by ID */
+export const deleteUserAdmin = (id) =>
+  request(`/api/admin/users/${id}`, { method: 'DELETE', headers: adminAuthHeader() });
+
 /** Admin: export leads CSV — returns raw text, not JSON */
 export const exportLeadsCSV = async () => {
   const url = `${API_BASE}/api/leads/export.csv`;

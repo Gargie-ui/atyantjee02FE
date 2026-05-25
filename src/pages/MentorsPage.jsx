@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Filter, Search, MapPin, BookOpen, Medal, Star,
-  CheckCircle2, ChevronRight, Users, ExternalLink
+  Search, MapPin, BookOpen, Star,
+  CheckCircle2
 } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { PaymentModal } from '../components/PricingCard';
 import API_BASE, { getMentors } from '../utils/api';
 import { ALL_INDIAN_STATES, COLLEGES_BY_TYPE, DEPARTMENTS } from '../data/siteContent';
@@ -40,7 +40,7 @@ const BUNDLES = [
     sub: 'Round-wise JoSAA + CSAB support',
     price: '₹1,799',
     originalPrice: '₹5,999',
-    discount: '70% OFF', 
+    discount: '70% OFF',
     color: '#534AB7',
     bg: '#EEEDFE',
     wa: 'Hi+Atyant%2C+I+am+interested+in+Dream+Seat+Protection.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
@@ -112,11 +112,13 @@ function MentorCard({ mentor, index, defaultBundle }) {
     const found = BUNDLES.find(bx => bx.name === b || bx.id === b);
     return found ? found.id : null;
   }).filter(Boolean) : [];
-  
-  const initialBundle = (defaultBundle && mentorBundles.includes(defaultBundle)) 
-    ? defaultBundle 
+
+  const navigate = useNavigate();
+
+  const initialBundle = (defaultBundle && mentorBundles.includes(defaultBundle))
+    ? defaultBundle
     : (mentorBundles.includes('complete-guidance') ? 'complete-guidance' : mentorBundles[0]);
-    
+
   const [selectedBundle, setSelectedBundle] = useState(initialBundle);
   const [showPayment, setShowPayment] = useState(false);
 
@@ -125,9 +127,41 @@ function MentorCard({ mentor, index, defaultBundle }) {
       setSelectedBundle(defaultBundle);
     }
   }, [defaultBundle, mentorBundles]);
-  
+
+  // Handle auto-resume checkout after redirect login success
+  useEffect(() => {
+    const pending = localStorage.getItem('atyant_pending_booking');
+    if (pending) {
+      try {
+        const { mentorId, bundleId } = JSON.parse(pending);
+        if (mentorId === (mentor.id || mentor._id)) {
+          if (bundleId && mentorBundles.includes(bundleId)) {
+            setSelectedBundle(bundleId);
+          }
+          setShowPayment(true);
+          localStorage.removeItem('atyant_pending_booking');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [mentor, mentorBundles]);
+
   const bundle = BUNDLE_MAP[selectedBundle];
   const waUrl = `https://wa.me/919579040183?text=${bundle?.wa ?? ''}`;
+
+  const handleBookClick = () => {
+    const token = localStorage.getItem('user_token');
+    if (!token) {
+      localStorage.setItem('atyant_pending_booking', JSON.stringify({
+        mentorId: mentor.id || mentor._id,
+        bundleId: selectedBundle
+      }));
+      navigate('/login', { state: { message: 'Please sign up or log in as a Student to buy a mentorship plan.' } });
+      return;
+    }
+    setShowPayment(true);
+  };
 
   return (
     <motion.div
@@ -140,9 +174,9 @@ function MentorCard({ mentor, index, defaultBundle }) {
     >
       <div className="flex items-center gap-3 mb-4">
         {mentor.profilePhotoFilename ? (
-          <img 
-            src={`${API_BASE}/api/upload/profile-photo/${mentor.profilePhotoFilename}`} 
-            alt={mentor.name} 
+          <img
+            src={`${API_BASE}/api/upload/profile-photo/${mentor.profilePhotoFilename}`}
+            alt={mentor.name}
             className="w-14 h-14 rounded-full object-cover border-2 border-slate-100 flex-shrink-0 shadow-sm"
           />
         ) : (
@@ -196,7 +230,7 @@ function MentorCard({ mentor, index, defaultBundle }) {
         </div>
       </div>
 
-      <button onClick={() => setShowPayment(true)} className="mt-4 w-full py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200">
+      <button onClick={handleBookClick} className="mt-4 w-full py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200">
         Book {bundle?.name} →
       </button>
 
@@ -217,11 +251,12 @@ function MentorCard({ mentor, index, defaultBundle }) {
 // ─── Main page ─────────────────────────────────────────────────────────────
 export default function MentorsPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const bundleParam = useMemo(() => new URLSearchParams(location.search).get('bundle'), [location.search]);
-  
+
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     getMentors()
       .then(res => setMentors(res.mentors || []))
@@ -234,11 +269,12 @@ export default function MentorsPage() {
   const [filterCollegeName, setFilterCollegeName] = useState('');
   const [filterState, setFilterState] = useState('');
   const [filterBranch, setFilterBranch] = useState('');
+  const [filterRank, setFilterRank] = useState(1000000);
   const [sortBy, setSortBy] = useState('default');
 
   const handleCollegeTypeChange = (e) => {
     setFilterCollegeType(e.target.value);
-    setFilterCollegeName(''); 
+    setFilterCollegeName('');
   };
 
   const activeCollegeList = useMemo(() => {
@@ -248,9 +284,11 @@ export default function MentorsPage() {
 
   const filtered = useMemo(() => {
     let list = mentors.filter(m => {
-      const matchSearch = !search || m.name.toLowerCase().includes(search.toLowerCase());
-      
-      // Strict category normalization logic to prevent duplicate matching types
+      // Search by college name or mentor name
+      const matchSearch = !search || 
+        m.college.toLowerCase().includes(search.toLowerCase()) || 
+        m.name.toLowerCase().includes(search.toLowerCase());
+
       let matchType = true;
       if (filterCollegeType) {
         const mentorCollegeLower = (m.college || '').toLowerCase();
@@ -259,18 +297,16 @@ export default function MentorsPage() {
         } else if (filterCollegeType === 'PRIVATE') {
           matchType = ['bits', 'vit', 'manipal', 'thapar', 'srm', 'rvce', 'bmsce', 'msrit', 'lnmiit', 'nirma'].some(x => mentorCollegeLower.includes(x));
         } else {
-          // Absolute mapping for standalone blocks like IIT, NIT, IIIT
           matchType = mentorCollegeLower.includes(filterCollegeType.toLowerCase()) && 
                      !(filterCollegeType.toLowerCase() === 'iit' && mentorCollegeLower.includes('iiit'));
         }
       }
 
-      // Dropdown fallback normalization handling substring evaluations cleanly
       const matchCollegeName = !filterCollegeName || (m.college || '').toLowerCase().includes(filterCollegeName.toLowerCase());
       const matchState = !filterState || (m.state || '').toLowerCase() === filterState.toLowerCase();
       const matchBranch = !filterBranch || (m.branch || '').toLowerCase().includes(filterBranch.toLowerCase());
+      const matchRank = !m.rank || m.rank <= filterRank;
 
-      // Safe evaluation map for query parameters passed across landing packages
       let matchBundleParam = true;
       if (bundleParam) {
         matchBundleParam = Array.isArray(m.bundles) && m.bundles.some(b => {
@@ -281,7 +317,7 @@ export default function MentorsPage() {
         });
       }
 
-      return matchSearch && matchType && matchCollegeName && matchState && matchBranch && matchBundleParam;
+      return matchSearch && matchType && matchCollegeName && matchState && matchBranch && matchRank && matchBundleParam;
     });
 
     if (sortBy === 'rating') list = [...list].sort((a, b) => (b.rating || 5) - (a.rating || 5));
@@ -295,146 +331,193 @@ export default function MentorsPage() {
       return aMin - bMin;
     });
     return list;
-  }, [mentors, search, filterCollegeType, filterCollegeName, filterState, filterBranch, sortBy, bundleParam]);
+  }, [mentors, search, filterCollegeType, filterCollegeName, filterState, filterBranch, filterRank, sortBy, bundleParam]);
 
-  const hasFilter = search || filterCollegeType || filterCollegeName || filterState || filterBranch || bundleParam;
+  const hasFilter = search || filterCollegeType || filterCollegeName || filterState || filterBranch || filterRank < 1000000 || bundleParam;
 
   function clearFilters() {
-    setSearch(''); setFilterCollegeType(''); setFilterCollegeName(''); setFilterState(''); setFilterBranch('');
+    setSearch('');
+    setFilterCollegeType('');
+    setFilterCollegeName('');
+    setFilterState('');
+    setFilterBranch('');
+    setFilterRank(1000000);
     if (bundleParam) navigate(location.pathname, { replace: true });
   }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
+
+      {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#F3F8FF] to-[#F8FAFC] border-b border-slate-200 px-4 py-14 sm:px-6 lg:px-8">
         <div className="relative z-10 mx-auto max-w-7xl text-center">
-          <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl"
+          >
             Find Your <span className="bg-gradient-to-r from-[#FF6B2B] to-[#ff955f] bg-clip-text text-transparent drop-shadow-sm">Mentor</span>
           </motion.h1>
           <p className="mt-4 text-base font-medium text-slate-500 max-w-xl mx-auto">
             Talk to current students from the exact colleges you're targeting. Real seats, real ranks, real counselling.
           </p>
-        </div>
-      </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          
-          <motion.aside initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="w-full lg:w-72 shrink-0">
-            <div className="rounded-2xl bg-white border border-slate-200 p-5 sticky top-24 space-y-4">
-              <div className="flex items-center gap-2 font-black text-slate-800">
-                <Filter className="w-4 h-4 text-blue-500" /> Filters
-              </div>
-
-              <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                <input
-                  type="text" placeholder="Search by name..." value={search} onChange={e => setSearch(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">College Type</label>
-                <select
-                  value={filterCollegeType} onChange={handleCollegeTypeChange}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
-                >
-                  <option value="">All Categories</option>
-                  <option value="IIT">IIT</option>
-                  <option value="NIT">NIT</option>
-                  <option value="IIIT">IIIT</option>
-                  <option value="STATE GOV.">STATE GOV.</option>
-                  <option value="PRIVATE">PRIVATE</option>
-                  <option value="OTHERS">OTHERS</option>
-                </select>
-              </div>
-
-              {filterCollegeType && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Select College</label>
-                  <select
-                    value={filterCollegeName} onChange={e => setFilterCollegeName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
-                  >
-                    <option value="">All {filterCollegeType} Colleges</option>
-                    {activeCollegeList.map(name => (
-                      <option key={name} value={name}>{name}</option>
-                    ))}
-                  </select>
-                </motion.div>
-              )}
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">State Location</label>
-                <select
-                  value={filterState} onChange={e => setFilterState(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
-                >
-                  <option value="">All States</option>
-                  {ALL_INDIAN_STATES.map(st => (
-                    <option key={st} value={st}>{st}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Department</label>
-                <select
-                  value={filterBranch} onChange={e => setFilterBranch(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
-                >
-                  <option value="">All Departments</option>
-                  {DEPARTMENTS.map(b => (
-                    <option key={b} value={b}>{b}</option>
-                  ))}
-                </select>
-              </div>
-
-              {hasFilter && (
-                <button onClick={clearFilters} className="mt-2 w-full py-2 rounded-xl text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 transition">
-                  Clear all filters
-                </button>
-              )}
+          {/* Rank Slider */}
+          <div className="mt-6 mx-auto max-w-sm">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-slate-500">JEE Rank</span>
+              <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-0.5 rounded-full">
+                Up to {filterRank.toLocaleString('en-IN')}
+              </span>
             </div>
-          </motion.aside>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-5">
-              <p className="text-sm text-slate-500">
-                {loading ? 'Loading mentors...' : (
-                  <>Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {mentors.length} mentors</>
-                )}
-              </p>
-              <select
-                value={sortBy} onChange={e => setSortBy(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs text-slate-600 outline-none focus:border-blue-400 transition"
-              >
-                <option value="default">Sort: Recommended</option>
-                <option value="priceLow">Price: low to high</option>
-                <option value="rating">Highest rated</option>
-                <option value="sessions">Most sessions</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              <AnimatePresence>
-                {filtered.map((mentor, i) => (
-                  <MentorCard key={mentor._id || mentor.id || i} mentor={mentor} index={i} defaultBundle={bundleParam} />
-                ))}
-              </AnimatePresence>
-
-              {filtered.length === 0 && !loading && (
-                <div className="col-span-full py-24 text-center">
-                  <h3 className="text-lg font-bold text-slate-800">No mentors found matching criteria</h3>
-                  <p className="mt-1 text-sm text-slate-500">Try loosening your category parameters.</p>
-                </div>
-              )}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-400">1</span>
+              <input
+                type="range"
+                min="1"
+                max="1000000"
+                step="1000"
+                value={filterRank}
+                onChange={e => setFilterRank(Number(e.target.value))}
+                className="flex-1 accent-blue-500 h-2 rounded-full"
+              />
+              <span className="text-xs text-slate-400">10L</span>
             </div>
           </div>
 
         </div>
+      </section>
+
+      {/* ── Horizontal Filter Ribbon ── */}
+      <div className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-end gap-3">
+
+          {/* Search by College */}
+          <div className="relative flex-1 min-w-[130px]">
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by name or college..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
+            />
+          </div>
+
+          {/* College Type */}
+          <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">College Type</label>
+            <select
+              value={filterCollegeType}
+              onChange={handleCollegeTypeChange}
+              className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
+            >
+              <option value="">All Types</option>
+              <option value="IIT">IIT</option>
+              <option value="NIT">NIT</option>
+              <option value="IIIT">IIIT</option>
+              <option value="STATE GOV.">STATE GOV.</option>
+              <option value="PRIVATE">PRIVATE</option>
+              <option value="OTHERS">OTHERS</option>
+            </select>
+          </div>
+
+          {/* Specific College (cascading) */}
+          {filterCollegeType && (
+            <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">College</label>
+              <select
+                value={filterCollegeName}
+                onChange={e => setFilterCollegeName(e.target.value)}
+                className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
+              >
+                <option value="">All {filterCollegeType}</option>
+                {activeCollegeList.map(name => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* State */}
+          <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">State</label>
+            <select
+              value={filterState}
+              onChange={e => setFilterState(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
+            >
+              <option value="">All States</option>
+              {ALL_INDIAN_STATES.map(st => (
+                <option key={st} value={st}>{st}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Branch / Department */}
+          <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Department</label>
+            <select
+              value={filterBranch}
+              onChange={e => setFilterBranch(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
+            >
+              <option value="">All Departments</option>
+              {DEPARTMENTS.map(b => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Clear all */}
+          {hasFilter && (
+            <button
+              onClick={clearFilters}
+              className="py-2 px-3 rounded-xl text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 transition self-end animate-fadeIn"
+            >
+              Clear all
+            </button>
+          )}
+
+        </div>
       </div>
+
+      {/* Results grid */}
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-sm text-slate-500">
+            {loading ? 'Loading mentors...' : (
+              <>Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {mentors.length} mentors</>
+            )}
+          </p>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs text-slate-600 outline-none focus:border-blue-400 transition"
+          >
+            <option value="default">Sort: Recommended</option>
+            <option value="priceLow">Price: low to high</option>
+            <option value="rating">Highest rated</option>
+            <option value="sessions">Most sessions</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <AnimatePresence>
+            {filtered.map((mentor, i) => (
+              <MentorCard key={mentor._id || mentor.id || i} mentor={mentor} index={i} defaultBundle={bundleParam} />
+            ))}
+          </AnimatePresence>
+
+          {filtered.length === 0 && !loading && (
+            <div className="col-span-full py-24 text-center">
+              <h3 className="text-lg font-bold text-slate-800">No mentors found matching criteria</h3>
+              <p className="mt-1 text-sm text-slate-500">Try loosening your category parameters.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }

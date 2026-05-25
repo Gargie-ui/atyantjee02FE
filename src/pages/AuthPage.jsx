@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { userLogin, userSignup } from '../utils/api';
 
 export default function AuthPage({ setUser }) {
@@ -12,6 +12,8 @@ export default function AuthPage({ setUser }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const customMessage = location.state?.message;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,11 +34,16 @@ export default function AuthPage({ setUser }) {
       }
       if (setUser) setUser(res.user);
 
-      // Redirect to profile page after signup, or home after login
-      if (isLogin) {
-        navigate('/');
+      // Check for pending booking redirect
+      const pendingBooking = localStorage.getItem('atyant_pending_booking');
+      if (pendingBooking && res.user.role === 'student') {
+        navigate('/mentors');
       } else {
-        navigate('/profile');
+        if (isLogin) {
+          navigate(res.user.role === 'mentor' ? '/profile' : '/');
+        } else {
+          navigate('/profile');
+        }
       }
 
     } catch (err) {
@@ -49,6 +56,15 @@ export default function AuthPage({ setUser }) {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
+
+        {customMessage && (
+          <div className="mb-6 p-4 rounded-2xl bg-orange-50/50 border border-[#FF6B2B]/20 text-xs font-semibold text-[#FF6B2B] text-center flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 shrink-0">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3Z" />
+            </svg>
+            <span>{customMessage}</span>
+          </div>
+        )}
 
         <div className="text-center mb-8">
           <h2 className="text-3xl font-black text-[#0B0F2E]">

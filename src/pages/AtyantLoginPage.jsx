@@ -10,6 +10,8 @@ import {
   exportLeadsCSV,
   listPayments,
   listChatSessions,
+  listMentorsAdmin,
+  deleteUserAdmin,
 } from '../utils/api';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -310,9 +312,128 @@ function ChatSessionsTab() {
   );
 }
 
+// ─── Mentors Tab ──────────────────────────────────────────────────────────────
+
+function MentorsTab() {
+  const [mentors, setMentors] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
+  const [search, setSearch] = React.useState('');
+
+  const fetchMentors = React.useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await listMentorsAdmin();
+      setMentors(data.mentors || []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchMentors();
+  }, [fetchMentors]);
+
+  async function handleDelete(id, name) {
+    if (!window.confirm(`⚠️ WARNING: Are you absolutely sure you want to permanently delete the mentor account for "${name}"?\nThis action cannot be undone and will delete their active profile!`)) {
+      return;
+    }
+    try {
+      await deleteUserAdmin(id);
+      fetchMentors();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  const filtered = React.useMemo(() => {
+    if (!search) return mentors;
+    const q = search.toLowerCase();
+    return mentors.filter(m => 
+      (m.name || '').toLowerCase().includes(q) ||
+      (m.username || '').toLowerCase().includes(q) ||
+      (m.email || '').toLowerCase().includes(q) ||
+      (m.college || '').toLowerCase().includes(q) ||
+      (m.phone || '').toLowerCase().includes(q)
+    );
+  }, [mentors, search]);
+
+  return (
+    <div className="mt-4">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name, email, college, phone..."
+          className="rounded-md border px-3 py-1.5 text-sm flex-1 min-w-[200px]"
+        />
+        <button onClick={fetchMentors} className="rounded-md bg-slate-100 px-3 py-1.5 text-sm hover:bg-slate-200">
+          Refresh
+        </button>
+      </div>
+
+      <div className="text-xs text-gray-500 mb-2">{filtered.length} mentors found</div>
+
+      {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
+      {loading ? (
+        <p className="text-sm text-gray-400">Loading…</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-sm text-gray-400">No mentors found.</p>
+      ) : (
+        <div className="overflow-x-auto rounded-md border shadow-sm">
+          <table className="w-full table-auto text-sm">
+            <thead className="bg-slate-50 text-xs text-gray-500">
+              <tr>
+                <th className="px-3 py-2 text-left">Name / Username</th>
+                <th className="px-3 py-2 text-left">Email</th>
+                <th className="px-3 py-2 text-left">Phone</th>
+                <th className="px-3 py-2 text-left">College & Branch</th>
+                <th className="px-3 py-2 text-left">State</th>
+                <th className="px-3 py-2 text-left">Date Joined</th>
+                <th className="px-3 py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filtered.map((m) => (
+                <tr key={m._id || m.id} className="hover:bg-slate-50">
+                  <td className="px-3 py-2 font-medium">
+                    <div>{m.name || '—'}</div>
+                    <div className="text-[11px] text-gray-400 font-mono">@{m.username}</div>
+                  </td>
+                  <td className="px-3 py-2 text-gray-600">{m.email}</td>
+                  <td className="px-3 py-2 text-gray-500">{m.phone || '—'}</td>
+                  <td className="px-3 py-2">
+                    <div className="text-xs font-semibold text-blue-600 max-w-xs truncate">{m.college || '—'}</div>
+                    <div className="text-[11px] text-gray-400 truncate">{m.branch || '—'}</div>
+                  </td>
+                  <td className="px-3 py-2 text-gray-500">{m.state || '—'}</td>
+                  <td className="px-3 py-2 text-gray-400 whitespace-nowrap">
+                    {m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '—'}
+                  </td>
+                  <td className="px-3 py-2">
+                    <button 
+                      onClick={() => handleDelete(m._id || m.id, m.name || m.username)} 
+                      className="text-xs text-red-500 font-semibold hover:underline bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded transition"
+                    >
+                      Delete Account
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main AdminPanel Page ─────────────────────────────────────────────────────────
 
-const TABS = ['leads', 'payments', 'chat'];
+const TABS = ['leads', 'payments', 'chat', 'mentors'];
 
 export default function AtyantLoginPage() {
   const [authed, setAuthed] = React.useState(false);
@@ -443,6 +564,7 @@ export default function AtyantLoginPage() {
               {tab === 'leads' && <LeadsTab />}
               {tab === 'payments' && <PaymentsTab />}
               {tab === 'chat' && <ChatSessionsTab />}
+              {tab === 'mentors' && <MentorsTab />}
             </div>
           </>
         )}
