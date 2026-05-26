@@ -1,10 +1,9 @@
-import React, { useRef,useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ALL_INDIAN_STATES,POPULAR_LANGUAGES,COLLEGES_BY_TYPE,DEPARTMENTS } from '../data/siteContent';
+import { ALL_INDIAN_STATES, POPULAR_LANGUAGES, COLLEGES_BY_TYPE, DEPARTMENTS } from '../data/siteContent';
 import { getUserMe, updateUser, uploadProfilePhoto, uploadIdDoc, getMyBookings, deleteIdDoc, verifyPayment } from '../utils/api';
 import API_BASE from '../utils/api';
 import { getDetailedWhatsAppLink } from '../utils/whatsapp';
-
 
 const AVAILABLE_BUNDLES = [
   {
@@ -102,6 +101,9 @@ export default function ProfilePage({ user, setUser }) {
 
   const photoInputRef = useRef(null);
   const idDocInputRef = useRef(null);
+
+  // Maximum character restriction constant (set to 2000 or 5000 depending on your choice)
+  const MAX_BIO_CHARS = 5000;
 
   useEffect(() => {
     if (user) {
@@ -247,6 +249,13 @@ export default function ProfilePage({ user, setUser }) {
     setBundles((prev) =>
       prev.includes(b) ? prev.filter((item) => item !== b) : [...prev, b]
     );
+  };
+
+  // Safe character limit handler function
+  const handleBioChange = (e) => {
+    if (e.target.value.length <= MAX_BIO_CHARS) {
+      setBio(e.target.value);
+    }
   };
 
   const handleSave = async (e) => {
@@ -652,16 +661,27 @@ export default function ProfilePage({ user, setUser }) {
                 </div>
               </div>
 
-              {/* Bio Pitch text */}
+              {/* Bio Pitch text with Dynamic Character Counter Block */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Your Pitch / Bio / One Liner</label>
                 <p className="text-xs text-slate-500 mb-2 leading-relaxed">Students come to you for one big decision — which college and branch to pick with their rank. Write a short pitch telling them why you're the right mentor to guide that choice.</p>
-                <textarea
-                  value={bio} onChange={(e) => setBio(e.target.value)}
-                  placeholder="NIT Trichy CSE, AIR 1,800. I'll help you pick the right college-branch combo for your rank — no generic advice, just what actually worked."
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition resize-none"
-                />
+                <div className="relative">
+                  <textarea
+                    value={bio} 
+                    onChange={handleBioChange}
+                    placeholder="NIT Trichy CSE, AIR 1,800. I'll help you pick the right college-branch combo for your rank — no generic advice, just what actually worked."
+                    rows={4}
+                    maxLength={MAX_BIO_CHARS}
+                    className="w-full px-4 py-3 pb-8 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B2B]/40 transition resize-none"
+                  />
+                  {/* Absolute Counter Box overlay */}
+                  <div className="absolute bottom-3 right-4 text-xs font-medium text-slate-400 pointer-events-none">
+                    <span className={bio.length >= MAX_BIO_CHARS ? 'text-red-500 font-semibold' : ''}>
+                      {bio.length}
+                    </span>
+                    <span>/{MAX_BIO_CHARS}</span>
+                  </div>
+                </div>
               </div>
 
               {/* Product Bundles Configuration Node Loop */}
