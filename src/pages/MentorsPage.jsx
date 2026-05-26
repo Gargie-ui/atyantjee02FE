@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, MapPin, BookOpen, Star,
   CheckCircle2
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Range, getTrackBackground } from 'react-range';
 import { PaymentModal } from '../components/PricingCard';
 import API_BASE, { getMentors } from '../utils/api';
 import { ALL_INDIAN_STATES, COLLEGES_BY_TYPE, DEPARTMENTS } from '../data/siteContent';
@@ -58,11 +59,33 @@ const AVATAR_COLORS = [
   { bg: '#EAF3DE', text: '#27500A' },
 ];
 
+// ─── Rank config ──────────────────────────────────────────────────────────
+const RANK_MIN = 1;
+const RANK_MAX = 1000000;
+
+const RANK_PRESETS = [
+  { label: 'Top 1K',   min: 1,      max: 1000   },
+  { label: '1K–5K',   min: 1000,   max: 5000   },
+  { label: '5K–10K',  min: 5000,   max: 10000  },
+  { label: '10K–25K', min: 10000,  max: 25000  },
+  { label: '25K–50K', min: 25000,  max: 50000  },
+  { label: '50K–1L',  min: 50000,  max: 100000 },
+  { label: '1L–2L',   min: 100000, max: 200000 },
+  { label: '2L–5L',   min: 200000, max: 500000 },
+  { label: '5L–10L',  min: 500000, max: 1000000},
+];
+
+function formatRank(n) {
+  if (n >= 100000) return (n / 100000).toFixed(1).replace(/\.0$/, '') + 'L';
+  if (n >= 1000)   return (n / 1000).toFixed(0) + 'K';
+  return n.toString();
+}
+
 function getInitials(name) {
   return name ? name.split(' ').map(w => w[0]).join('') : 'M';
 }
 
-// ─── Bundle row inside mentor card ────────────────────────────────────────
+// ─── Bundle row ───────────────────────────────────────────────────────────
 function BundleRow({ bundleId, isSelected, onSelect }) {
   const b = BUNDLE_MAP[bundleId];
   if (!b) return null;
@@ -70,7 +93,7 @@ function BundleRow({ bundleId, isSelected, onSelect }) {
     <button
       type="button"
       onClick={onSelect}
-      className="flex w-full items-center justify-between rounded-xl px-3 py-2 border transition-all group/bundle text-left"
+      className="flex w-full items-center justify-between rounded-xl px-3 py-2 border transition-all text-left"
       style={{
         borderColor: isSelected ? b.color : '#e2e8f0',
         backgroundColor: isSelected ? b.bg : 'transparent',
@@ -108,12 +131,12 @@ function BundleRow({ bundleId, isSelected, onSelect }) {
 // ─── Mentor card ──────────────────────────────────────────────────────────
 function MentorCard({ mentor, index, defaultBundle }) {
   const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
+  const navigate = useNavigate();
+
   const mentorBundles = Array.isArray(mentor.bundles) ? mentor.bundles.map(b => {
     const found = BUNDLES.find(bx => bx.name === b || bx.id === b);
     return found ? found.id : null;
   }).filter(Boolean) : [];
-
-  const navigate = useNavigate();
 
   const initialBundle = (defaultBundle && mentorBundles.includes(defaultBundle))
     ? defaultBundle
@@ -126,26 +149,21 @@ function MentorCard({ mentor, index, defaultBundle }) {
     if (defaultBundle && mentorBundles.includes(defaultBundle)) {
       setSelectedBundle(defaultBundle);
     }
-  }, [defaultBundle, mentorBundles]);
+  }, [defaultBundle]);
 
-  // Handle auto-resume checkout after redirect login success
   useEffect(() => {
     const pending = localStorage.getItem('atyant_pending_booking');
     if (pending) {
       try {
         const { mentorId, bundleId } = JSON.parse(pending);
         if (mentorId === (mentor.id || mentor._id)) {
-          if (bundleId && mentorBundles.includes(bundleId)) {
-            setSelectedBundle(bundleId);
-          }
+          if (bundleId && mentorBundles.includes(bundleId)) setSelectedBundle(bundleId);
           setShowPayment(true);
           localStorage.removeItem('atyant_pending_booking');
         }
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) { console.error(e); }
     }
-  }, [mentor, mentorBundles]);
+  }, [mentor]);
 
   const bundle = BUNDLE_MAP[selectedBundle];
   const waUrl = `https://wa.me/919579040183?text=${bundle?.wa ?? ''}`;
@@ -155,7 +173,7 @@ function MentorCard({ mentor, index, defaultBundle }) {
     if (!token) {
       localStorage.setItem('atyant_pending_booking', JSON.stringify({
         mentorId: mentor.id || mentor._id,
-        bundleId: selectedBundle
+        bundleId: selectedBundle,
       }));
       navigate('/login', { state: { message: 'Please sign up or log in as a Student to buy a mentorship plan.' } });
       return;
@@ -230,7 +248,10 @@ function MentorCard({ mentor, index, defaultBundle }) {
         </div>
       </div>
 
-      <button onClick={handleBookClick} className="mt-4 w-full py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200">
+      <button
+        onClick={handleBookClick}
+        className="mt-4 w-full py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200"
+      >
         Book {bundle?.name} →
       </button>
 
@@ -248,10 +269,125 @@ function MentorCard({ mentor, index, defaultBundle }) {
   );
 }
 
+// ─── Custom Range Modal ───────────────────────────────────────────────────
+function CustomRangeModal({ open, onClose, onApply }) {
+  const [minVal, setMinVal] = useState('');
+  const [maxVal, setMaxVal] = useState('');
+  const [error, setError]   = useState('');
+
+  if (!open) return null;
+
+  const handleApply = () => {
+    const mn = parseInt(minVal);
+    const mx = parseInt(maxVal);
+    if (!minVal || !maxVal || isNaN(mn) || isNaN(mx)) { setError('Please enter both values.'); return; }
+    if (mn >= mx)          { setError('Min rank must be less than max rank.'); return; }
+    if (mn < 1 || mx > 1000000) { setError('Values must be between 1 and 10,00,000.'); return; }
+    setError('');
+    onApply(mn, mx);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl"
+      >
+        <h3 className="text-base font-black text-slate-900 mb-1">Custom Rank Range</h3>
+        <p className="text-xs text-slate-500 mb-4">Type your exact JEE rank range</p>
+        <div className="flex gap-3 mb-3">
+          <div className="flex-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Min Rank</label>
+            <input
+              type="number" placeholder="e.g. 40000" value={minVal}
+              onChange={e => setMinVal(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Max Rank</label>
+            <input
+              type="number" placeholder="e.g. 50000" value={maxVal}
+              onChange={e => setMaxVal(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
+            />
+          </div>
+        </div>
+        {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+            Cancel
+          </button>
+          <button onClick={handleApply} className="flex-1 py-2 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-blue-600 transition">
+            Apply
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Dual thumb slider using react-range ─────────────────────────────────
+function DualRangeSlider({ values, onChange }) {
+  return (
+    <Range
+      step={1000}
+      min={RANK_MIN}
+      max={RANK_MAX}
+      values={values}
+      onChange={onChange}
+      renderTrack={({ props, children }) => (
+        <div
+          {...props}
+          style={{
+            ...props.style,
+            height: '6px',
+            width: '100%',
+            borderRadius: '3px',
+            background: getTrackBackground({
+              values,
+              colors: ['#e2e8f0', '#3b82f6', '#e2e8f0'],
+              min: RANK_MIN,
+              max: RANK_MAX,
+            }),
+          }}
+        >
+          {children}
+        </div>
+      )}
+      renderThumb={({ props, isDragged }) => (
+        <div
+          {...props}
+          style={{
+            ...props.style,
+            height: '20px',
+            width: '20px',
+            borderRadius: '50%',
+            backgroundColor: '#ffffff',
+            border: isDragged ? '2px solid #3b82f6' : '2px solid #94a3b8',
+            boxShadow: isDragged ? '0 0 0 4px rgba(59,130,246,0.2)' : '0 1px 4px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'grab',
+            outline: 'none',
+            transition: 'border-color 0.15s, box-shadow 0.15s',
+          }}
+        >
+          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isDragged ? '#3b82f6' : '#94a3b8' }} />
+        </div>
+      )}
+    />
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────
 export default function MentorsPage() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location   = useLocation();
+  const navigate   = useNavigate();
   const bundleParam = useMemo(() => new URLSearchParams(location.search).get('bundle'), [location.search]);
 
   const [mentors, setMentors] = useState([]);
@@ -264,18 +400,44 @@ export default function MentorsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const [search, setSearch] = useState('');
+  const [search,           setSearch]           = useState('');
   const [filterCollegeType, setFilterCollegeType] = useState('');
   const [filterCollegeName, setFilterCollegeName] = useState('');
-  const [filterState, setFilterState] = useState('');
-  const [filterBranch, setFilterBranch] = useState('');
-  const [filterRank, setFilterRank] = useState(1000000);
-  const [sortBy, setSortBy] = useState('default');
+  const [filterState,      setFilterState]      = useState('');
+  const [filterBranch,     setFilterBranch]     = useState('');
+  const [rankValues,       setRankValues]       = useState([RANK_MIN, RANK_MAX]);
+  const [activePreset,     setActivePreset]     = useState(null);
+  const [showCustomModal,  setShowCustomModal]  = useState(false);
+  const [sortBy,           setSortBy]           = useState('default');
+
+  const rankMin = rankValues[0];
+  const rankMax = rankValues[1];
 
   const handleCollegeTypeChange = (e) => {
     setFilterCollegeType(e.target.value);
     setFilterCollegeName('');
   };
+
+  const handlePresetClick = useCallback((preset) => {
+    if (activePreset === preset.label) {
+      setActivePreset(null);
+      setRankValues([RANK_MIN, RANK_MAX]);
+    } else {
+      setActivePreset(preset.label);
+      setRankValues([preset.min, preset.max]);
+    }
+  }, [activePreset]);
+
+  const handleCustomApply = useCallback((mn, mx) => {
+    setActivePreset(`${formatRank(mn)}–${formatRank(mx)}`);
+    setRankValues([mn, mx]);
+  }, []);
+
+  const handleSliderChange = useCallback((vals) => {
+    setRankValues(vals);
+    const matched = RANK_PRESETS.find(p => p.min === vals[0] && p.max === vals[1]);
+    setActivePreset(matched ? matched.label : `${formatRank(vals[0])}–${formatRank(vals[1])}`);
+  }, []);
 
   const activeCollegeList = useMemo(() => {
     if (!filterCollegeType) return [];
@@ -284,38 +446,38 @@ export default function MentorsPage() {
 
   const filtered = useMemo(() => {
     let list = mentors.filter(m => {
-      // Search by college name or mentor name
       const searchLower = search.toLowerCase();
-
       const matchSearch =
         !search ||
-        (m.college ?? "").toLowerCase().includes(searchLower) ||
-        (m.name ?? "").toLowerCase().includes(searchLower);
+        (m.college ?? '').toLowerCase().includes(searchLower) ||
+        (m.name ?? '').toLowerCase().includes(searchLower);
 
       let matchType = true;
       if (filterCollegeType) {
-        const mentorCollegeLower = (m.college || '').toLowerCase();
+        const col = (m.college || '').toLowerCase();
         if (filterCollegeType === 'STATE GOV.') {
-          matchType = mentorCollegeLower.includes('state') || ['dtu', 'nsut', 'vjti', 'coep', 'jadavpur', 'iet', 'hbtu', 'sgsits'].some(x => mentorCollegeLower.includes(x));
+          matchType = col.includes('state') || ['dtu','nsut','vjti','coep','jadavpur','iet','hbtu','sgsits'].some(x => col.includes(x));
         } else if (filterCollegeType === 'PRIVATE') {
-          matchType = ['bits', 'vit', 'manipal', 'thapar', 'srm', 'rvce', 'bmsce', 'msrit', 'lnmiit', 'nirma'].some(x => mentorCollegeLower.includes(x));
+          matchType = ['bits','vit','manipal','thapar','srm','rvce','bmsce','msrit','lnmiit','nirma'].some(x => col.includes(x));
         } else {
-          matchType = mentorCollegeLower.includes(filterCollegeType.toLowerCase()) &&
-            !(filterCollegeType.toLowerCase() === 'iit' && mentorCollegeLower.includes('iiit'));
+          matchType = col.includes(filterCollegeType.toLowerCase()) &&
+            !(filterCollegeType.toLowerCase() === 'iit' && col.includes('iiit'));
         }
       }
 
       const matchCollegeName = !filterCollegeName || (m.college || '').toLowerCase().includes(filterCollegeName.toLowerCase());
-      const matchState = !filterState || (m.state || '').toLowerCase() === filterState.toLowerCase();
-      const matchBranch = !filterBranch || (m.branch || '').toLowerCase().includes(filterBranch.toLowerCase());
-      const matchRank = !m.rank || m.rank <= filterRank;
+      const matchState       = !filterState  || (m.state  || '').toLowerCase() === filterState.toLowerCase();
+      const matchBranch      = !filterBranch || (m.branch || '').toLowerCase().includes(filterBranch.toLowerCase());
+
+      // Real-time rank range filter — mentor_rank >= minRank AND mentor_rank <= maxRank
+      const matchRank = !m.rank || (m.rank >= rankMin && m.rank <= rankMax);
 
       let matchBundleParam = true;
       if (bundleParam) {
         matchBundleParam = Array.isArray(m.bundles) && m.bundles.some(b => {
-          if (bundleParam === 'quick-clarity') return b === 'Quick Clarity' || b === 'quick-clarity';
-          if (bundleParam === 'complete-guidance') return b === 'Complete Guidance' || b === 'complete-guidance';
-          if (bundleParam === 'dream-seat') return b === 'Dream Seat Protection™' || b === 'dream-seat';
+          if (bundleParam === 'quick-clarity')     return b === 'Quick Clarity'          || b === 'quick-clarity';
+          if (bundleParam === 'complete-guidance') return b === 'Complete Guidance'       || b === 'complete-guidance';
+          if (bundleParam === 'dream-seat')        return b === 'Dream Seat Protection™'  || b === 'dream-seat';
           return false;
         });
       }
@@ -323,20 +485,20 @@ export default function MentorsPage() {
       return matchSearch && matchType && matchCollegeName && matchState && matchBranch && matchRank && matchBundleParam;
     });
 
-    if (sortBy === 'rating') list = [...list].sort((a, b) => (b.rating || 5) - (a.rating || 5));
+    if (sortBy === 'rating')   list = [...list].sort((a, b) => (b.rating   || 5) - (a.rating   || 5));
     if (sortBy === 'sessions') list = [...list].sort((a, b) => (b.sessions || 0) - (a.sessions || 0));
     if (sortBy === 'priceLow') list = [...list].sort((a, b) => {
-      const price = id => parseInt((BUNDLE_MAP[id]?.price ?? '₹0').replace(/[^\d]/g, ''));
-      const aBundles = a.bundles ? a.bundles.map(bx => BUNDLES.find(x => x.name === bx || x.id === bx)?.id).filter(Boolean) : [];
-      const bBundles = b.bundles ? b.bundles.map(bx => BUNDLES.find(x => x.name === bx || x.id === bx)?.id).filter(Boolean) : [];
-      const aMin = aBundles.length ? Math.min(...aBundles.map(price)) : 0;
-      const bMin = bBundles.length ? Math.min(...bBundles.map(price)) : 0;
+      const price   = id => parseInt((BUNDLE_MAP[id]?.price ?? '₹0').replace(/[^\d]/g, ''));
+      const getBundles = x => x.bundles ? x.bundles.map(bx => BUNDLES.find(y => y.name === bx || y.id === bx)?.id).filter(Boolean) : [];
+      const aMin = getBundles(a).length ? Math.min(...getBundles(a).map(price)) : 0;
+      const bMin = getBundles(b).length ? Math.min(...getBundles(b).map(price)) : 0;
       return aMin - bMin;
     });
     return list;
-  }, [mentors, search, filterCollegeType, filterCollegeName, filterState, filterBranch, filterRank, sortBy, bundleParam]);
+  }, [mentors, search, filterCollegeType, filterCollegeName, filterState, filterBranch, rankMin, rankMax, sortBy, bundleParam]);
 
-  const hasFilter = search || filterCollegeType || filterCollegeName || filterState || filterBranch || filterRank < 1000000 || bundleParam;
+  const isRankFiltered = rankMin > RANK_MIN || rankMax < RANK_MAX;
+  const hasFilter = search || filterCollegeType || filterCollegeName || filterState || filterBranch || isRankFiltered || bundleParam;
 
   function clearFilters() {
     setSearch('');
@@ -344,14 +506,15 @@ export default function MentorsPage() {
     setFilterCollegeName('');
     setFilterState('');
     setFilterBranch('');
-    setFilterRank(1000000);
+    setRankValues([RANK_MIN, RANK_MAX]);
+    setActivePreset(null);
     if (bundleParam) navigate(location.pathname, { replace: true });
   }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
 
-      {/* Hero */}
+      {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#F3F8FF] to-[#F8FAFC] border-b border-slate-200 px-4 py-14 sm:px-6 lg:px-8">
         <div className="relative z-10 mx-auto max-w-7xl text-center">
           <motion.h1
@@ -359,43 +522,88 @@ export default function MentorsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl"
           >
-            Find Your <span className="bg-gradient-to-r from-[#FF6B2B] to-[#ff955f] bg-clip-text text-transparent drop-shadow-sm">Mentor</span>
+            Find Your{' '}
+            <span className="bg-gradient-to-r from-[#FF6B2B] to-[#ff955f] bg-clip-text text-transparent drop-shadow-sm">
+              Mentor
+            </span>
           </motion.h1>
           <p className="mt-4 text-base font-medium text-slate-500 max-w-xl mx-auto">
             Talk to current students from the exact colleges you're targeting. Real seats, real ranks, real counselling.
           </p>
 
-          {/* Rank Slider */}
-          <div className="mt-6 mx-auto max-w-sm">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-semibold text-slate-500">JEE Rank</span>
-              <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-0.5 rounded-full">
-                Up to {filterRank.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-400">1</span>
-              <input
-                type="range"
-                min="1"
-                max="1000000"
-                step="1000"
-                value={filterRank}
-                onChange={e => setFilterRank(Number(e.target.value))}
-                className="flex-1 accent-blue-500 h-2 rounded-full"
-              />
-              <span className="text-xs text-slate-400">10L</span>
-            </div>
-          </div>
+          {/* ── Rank Range Selector ── */}
+          <div className="mt-8 mx-auto max-w-2xl bg-white/80 backdrop-blur rounded-2xl border border-slate-200 shadow-sm p-5">
 
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-black text-slate-800">Filter by JEE Rank</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Showing mentors with rank&nbsp;
+                  <span className="font-bold text-blue-600">{formatRank(rankMin)}</span>
+                  &nbsp;–&nbsp;
+                  <span className="font-bold text-blue-600">{formatRank(rankMax)}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCustomModal(true)}
+                className="text-xs font-bold text-white bg-slate-800 hover:bg-blue-600 px-3 py-1.5 rounded-full transition flex items-center gap-1 flex-shrink-0"
+              >
+                + Custom
+              </button>
+            </div>
+
+            {/* Preset chips */}
+            <div className="flex flex-wrap gap-2 mb-5">
+              {RANK_PRESETS.map(preset => (
+                <button
+                  key={preset.label}
+                  onClick={() => handlePresetClick(preset)}
+                  className="px-3 py-1 rounded-full text-xs font-bold border transition-all"
+                  style={{
+                    backgroundColor: activePreset === preset.label ? '#2563eb' : '#f8fafc',
+                    color:           activePreset === preset.label ? '#ffffff'  : '#475569',
+                    borderColor:     activePreset === preset.label ? '#2563eb'  : '#e2e8f0',
+                  }}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Dual thumb slider */}
+            <div className="px-2">
+              <DualRangeSlider values={rankValues} onChange={handleSliderChange} />
+              <div className="flex justify-between mt-2">
+                <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                  {formatRank(rankMin)}
+                </span>
+                <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                  {formatRank(rankMax)}
+                </span>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
+
+      {/* Custom Range Modal */}
+      <AnimatePresence>
+        {showCustomModal && (
+          <CustomRangeModal
+            open={showCustomModal}
+            onClose={() => setShowCustomModal(false)}
+            onApply={handleCustomApply}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── Horizontal Filter Ribbon ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-end gap-3">
 
-          {/* Search by College */}
+          {/* Search */}
           <div className="relative flex-1 min-w-[130px]">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
             <input
@@ -410,11 +618,8 @@ export default function MentorsPage() {
           {/* College Type */}
           <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">College Type</label>
-            <select
-              value={filterCollegeType}
-              onChange={handleCollegeTypeChange}
-              className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
-            >
+            <select value={filterCollegeType} onChange={handleCollegeTypeChange}
+              className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition">
               <option value="">All Types</option>
               <option value="IIT">IIT</option>
               <option value="NIT">NIT</option>
@@ -429,15 +634,10 @@ export default function MentorsPage() {
           {filterCollegeType && (
             <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">College</label>
-              <select
-                value={filterCollegeName}
-                onChange={e => setFilterCollegeName(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
-              >
+              <select value={filterCollegeName} onChange={e => setFilterCollegeName(e.target.value)}
+                className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition">
                 <option value="">All {filterCollegeType}</option>
-                {activeCollegeList.map(name => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
+                {activeCollegeList.map(name => <option key={name} value={name}>{name}</option>)}
               </select>
             </div>
           )}
@@ -445,39 +645,27 @@ export default function MentorsPage() {
           {/* State */}
           <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">State</label>
-            <select
-              value={filterState}
-              onChange={e => setFilterState(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
-            >
+            <select value={filterState} onChange={e => setFilterState(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition">
               <option value="">All States</option>
-              {ALL_INDIAN_STATES.map(st => (
-                <option key={st} value={st}>{st}</option>
-              ))}
+              {ALL_INDIAN_STATES.map(st => <option key={st} value={st}>{st}</option>)}
             </select>
           </div>
 
-          {/* Branch / Department */}
+          {/* Department */}
           <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Department</label>
-            <select
-              value={filterBranch}
-              onChange={e => setFilterBranch(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
-            >
+            <select value={filterBranch} onChange={e => setFilterBranch(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition">
               <option value="">All Departments</option>
-              {DEPARTMENTS.map(b => (
-                <option key={b} value={b}>{b}</option>
-              ))}
+              {DEPARTMENTS.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
           </div>
 
           {/* Clear all */}
           {hasFilter && (
-            <button
-              onClick={clearFilters}
-              className="py-2 px-3 rounded-xl text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 transition self-end animate-fadeIn"
-            >
+            <button onClick={clearFilters}
+              className="py-2 px-3 rounded-xl text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 transition self-end">
               Clear all
             </button>
           )}
@@ -485,7 +673,7 @@ export default function MentorsPage() {
         </div>
       </div>
 
-      {/* Results grid */}
+      {/* ── Results grid ── */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-5">
           <p className="text-sm text-slate-500">
@@ -493,11 +681,8 @@ export default function MentorsPage() {
               <>Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {mentors.length} mentors</>
             )}
           </p>
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs text-slate-600 outline-none focus:border-blue-400 transition"
-          >
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs text-slate-600 outline-none focus:border-blue-400 transition">
             <option value="default">Sort: Recommended</option>
             <option value="priceLow">Price: low to high</option>
             <option value="rating">Highest rated</option>
