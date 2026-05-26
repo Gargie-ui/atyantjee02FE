@@ -50,6 +50,17 @@ const BUNDLES = [
 
 const BUNDLE_MAP = Object.fromEntries(BUNDLES.map(b => [b.id, b]));
 
+// ─── Normalise a bundle value (name or id) → canonical id ────────────────
+// FIX (Backend gap): bundles stored as names OR ids — normalise to id always.
+function normaliseBundleId(b) {
+  if (!b) return null;
+  const byId = BUNDLES.find(x => x.id === b);
+  if (byId) return byId.id;
+  const byName = BUNDLES.find(x => x.name === b);
+  if (byName) return byName.id;
+  return null;
+}
+
 const AVATAR_COLORS = [
   { bg: '#E6F1FB', text: '#0C447C' },
   { bg: '#E1F5EE', text: '#085041' },
@@ -83,6 +94,46 @@ function formatRank(n) {
 
 function getInitials(name) {
   return name ? name.split(' ').map(w => w[0]).join('') : 'M';
+}
+
+// ─── FIX (Logic): data-driven college type matcher ────────────────────────
+// Instead of fragile hardcoded acronym lists, rely on the mentor's own
+// `collegeType` field (added to backend schema). Falls back to a lightweight
+// heuristic only when the field is absent (legacy records).
+function matchesCollegeType(mentor, filterCollegeType) {
+  if (!filterCollegeType) return true;
+
+  // ✅ Primary path: use the stored field (requires backend field)
+  if (mentor.collegeType) {
+    return mentor.collegeType.toUpperCase() === filterCollegeType.toUpperCase();
+  }
+
+  // ⚠️ Fallback heuristic for legacy records without collegeType field
+  const col = (mentor.college || '').toLowerCase();
+  switch (filterCollegeType) {
+    case 'IIT':
+      // Must contain 'iit' but NOT 'iiit'
+      return /\biit\b/.test(col) && !/\biiit\b/.test(col);
+    case 'NIT':
+      return /\bnit\b/.test(col) || col.includes('national institute of technology');
+    case 'IIIT':
+      return /\biiit\b/.test(col) || col.includes('indian institute of information technology');
+    case 'STATE GOV.':
+      // Known state govt colleges — extend this list as needed
+      return /\b(dtu|nsut|vjti|coep|jadavpur|iet|hbtu|sgsits|pec|thapar|mnit|mnnit|mit manipal)\b/.test(col)
+        || col.includes('state');
+    case 'PRIVATE':
+      return /\b(bits|vit|manipal|srm|rvce|bmsce|msrit|lnmiit|nirma|kiit|kiet|amrita)\b/.test(col);
+    case 'OTHERS':
+      // Anything that doesn't match the above known patterns
+      return !/\biit\b/.test(col)
+        && !/\bnit\b/.test(col)
+        && !/\biiit\b/.test(col)
+        && !/\b(dtu|nsut|vjti|coep|jadavpur|iet|hbtu|sgsits|state)\b/.test(col)
+        && !/\b(bits|vit|manipal|srm|rvce|bmsce|msrit|lnmiit|nirma|kiit|kiet|amrita)\b/.test(col);
+    default:
+      return true;
+  }
 }
 
 // ─── Bundle row ───────────────────────────────────────────────────────────
@@ -133,10 +184,13 @@ function MentorCard({ mentor, index, defaultBundle }) {
   const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
   const navigate = useNavigate();
 
-  const mentorBundles = Array.isArray(mentor.bundles) ? mentor.bundles.map(b => {
-    const found = BUNDLES.find(bx => bx.name === b || bx.id === b);
-    return found ? found.id : null;
-  }).filter(Boolean) : [];
+  // FIX (Backend gap): normalise all bundle values to canonical IDs
+  const mentorBundles = useMemo(
+    () => Array.isArray(mentor.bundles)
+      ? mentor.bundles.map(normaliseBundleId).filter(Boolean)
+      : [],
+    [mentor.bundles]
+  );
 
   const initialBundle = (defaultBundle && mentorBundles.includes(defaultBundle))
     ? defaultBundle
@@ -149,21 +203,23 @@ function MentorCard({ mentor, index, defaultBundle }) {
     if (defaultBundle && mentorBundles.includes(defaultBundle)) {
       setSelectedBundle(defaultBundle);
     }
-  }, [defaultBundle]);
+  }, [defaultBundle, mentorBundles]);
 
+  // FIX: stable mentor id as dep instead of entire mentor object
+  const mentorId = mentor.id || mentor._id;
   useEffect(() => {
     const pending = localStorage.getItem('atyant_pending_booking');
     if (pending) {
       try {
-        const { mentorId, bundleId } = JSON.parse(pending);
-        if (mentorId === (mentor.id || mentor._id)) {
+        const { mentorId: pendingId, bundleId } = JSON.parse(pending);
+        if (pendingId === mentorId) {
           if (bundleId && mentorBundles.includes(bundleId)) setSelectedBundle(bundleId);
           setShowPayment(true);
           localStorage.removeItem('atyant_pending_booking');
         }
       } catch (e) { console.error(e); }
     }
-  }, [mentor]);
+  }, [mentorId, mentorBundles]);
 
   const bundle = BUNDLE_MAP[selectedBundle];
   const waUrl = `https://wa.me/919579040183?text=${bundle?.wa ?? ''}`;
@@ -172,7 +228,7 @@ function MentorCard({ mentor, index, defaultBundle }) {
     const token = localStorage.getItem('user_token');
     if (!token) {
       localStorage.setItem('atyant_pending_booking', JSON.stringify({
-        mentorId: mentor.id || mentor._id,
+        mentorId,
         bundleId: selectedBundle,
       }));
       navigate('/login', { state: { message: 'Please sign up or log in as a Student to buy a mentorship plan.' } });
@@ -261,7 +317,7 @@ function MentorCard({ mentor, index, defaultBundle }) {
           onClose={() => setShowPayment(false)}
           planTitle={bundle.name}
           planPrice={bundle.price.replace(/[^\d]/g, '')}
-          mentorId={mentor.id || mentor._id}
+          mentorId={mentorId}
           onSuccessRedirectUrl={waUrl}
         />
       )}
@@ -384,14 +440,19 @@ function DualRangeSlider({ values, onChange }) {
   );
 }
 
+// ─── Pagination config ────────────────────────────────────────────────────
+const PAGE_SIZE = 12;
+
 // ─── Main page ─────────────────────────────────────────────────────────────
 export default function MentorsPage() {
-  const location   = useLocation();
-  const navigate   = useNavigate();
+  const location    = useLocation();
+  const navigate    = useNavigate();
   const bundleParam = useMemo(() => new URLSearchParams(location.search).get('bundle'), [location.search]);
 
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(true);
+  // FIX (Backend gap — pagination): track current page
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     getMentors()
@@ -400,22 +461,24 @@ export default function MentorsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const [search,           setSearch]           = useState('');
+  const [search,            setSearch]            = useState('');
   const [filterCollegeType, setFilterCollegeType] = useState('');
   const [filterCollegeName, setFilterCollegeName] = useState('');
-  const [filterState,      setFilterState]      = useState('');
-  const [filterBranch,     setFilterBranch]     = useState('');
-  const [rankValues,       setRankValues]       = useState([RANK_MIN, RANK_MAX]);
-  const [activePreset,     setActivePreset]     = useState(null);
-  const [showCustomModal,  setShowCustomModal]  = useState(false);
-  const [sortBy,           setSortBy]           = useState('default');
+  const [filterState,       setFilterState]       = useState('');
+  const [filterBranch,      setFilterBranch]      = useState('');
+  const [rankValues,        setRankValues]        = useState([RANK_MIN, RANK_MAX]);
+  const [activePreset,      setActivePreset]      = useState(null);
+  const [showCustomModal,   setShowCustomModal]   = useState(false);
+  const [sortBy,            setSortBy]            = useState('default');
 
   const rankMin = rankValues[0];
   const rankMax = rankValues[1];
+  const isRankFiltered = rankMin > RANK_MIN || rankMax < RANK_MAX;
 
   const handleCollegeTypeChange = (e) => {
     setFilterCollegeType(e.target.value);
     setFilterCollegeName('');
+    setPage(1);
   };
 
   const handlePresetClick = useCallback((preset) => {
@@ -426,23 +489,32 @@ export default function MentorsPage() {
       setActivePreset(preset.label);
       setRankValues([preset.min, preset.max]);
     }
+    setPage(1);
   }, [activePreset]);
 
   const handleCustomApply = useCallback((mn, mx) => {
     setActivePreset(`${formatRank(mn)}–${formatRank(mx)}`);
     setRankValues([mn, mx]);
+    setPage(1);
   }, []);
 
   const handleSliderChange = useCallback((vals) => {
     setRankValues(vals);
     const matched = RANK_PRESETS.find(p => p.min === vals[0] && p.max === vals[1]);
     setActivePreset(matched ? matched.label : `${formatRank(vals[0])}–${formatRank(vals[1])}`);
+    setPage(1);
   }, []);
 
   const activeCollegeList = useMemo(() => {
     if (!filterCollegeType) return [];
     return COLLEGES_BY_TYPE[filterCollegeType] || [];
   }, [filterCollegeType]);
+
+  // ─── FIX: bundleParam guard — unknown values should not hide all mentors
+  const validBundleParam = useMemo(() => {
+    if (!bundleParam) return null;
+    return BUNDLES.some(b => b.id === bundleParam) ? bundleParam : null;
+  }, [bundleParam]);
 
   const filtered = useMemo(() => {
     let list = mentors.filter(m => {
@@ -452,34 +524,25 @@ export default function MentorsPage() {
         (m.college ?? '').toLowerCase().includes(searchLower) ||
         (m.name ?? '').toLowerCase().includes(searchLower);
 
-      let matchType = true;
-      if (filterCollegeType) {
-        const col = (m.college || '').toLowerCase();
-        if (filterCollegeType === 'STATE GOV.') {
-          matchType = col.includes('state') || ['dtu','nsut','vjti','coep','jadavpur','iet','hbtu','sgsits'].some(x => col.includes(x));
-        } else if (filterCollegeType === 'PRIVATE') {
-          matchType = ['bits','vit','manipal','thapar','srm','rvce','bmsce','msrit','lnmiit','nirma'].some(x => col.includes(x));
-        } else {
-          matchType = col.includes(filterCollegeType.toLowerCase()) &&
-            !(filterCollegeType.toLowerCase() === 'iit' && col.includes('iiit'));
-        }
-      }
+      // FIX (Logic): data-driven college type matching via helper
+      const matchType = matchesCollegeType(m, filterCollegeType);
 
       const matchCollegeName = !filterCollegeName || (m.college || '').toLowerCase().includes(filterCollegeName.toLowerCase());
       const matchState       = !filterState  || (m.state  || '').toLowerCase() === filterState.toLowerCase();
       const matchBranch      = !filterBranch || (m.branch || '').toLowerCase().includes(filterBranch.toLowerCase());
 
-      // Real-time rank range filter — mentor_rank >= minRank AND mentor_rank <= maxRank
-      const matchRank = !m.rank || (m.rank >= rankMin && m.rank <= rankMax);
+      // FIX (Filtering bug): when rank filter is active, mentors with NO rank
+      // are excluded rather than silently passing through.
+      let matchRank = true;
+      if (isRankFiltered) {
+        // Only include mentors that have a valid rank within the selected range
+        matchRank = typeof m.rank === 'number' && m.rank >= rankMin && m.rank <= rankMax;
+      }
 
+      // FIX (Filtering bug): use validated bundleParam; normalise stored bundles to ids
       let matchBundleParam = true;
-      if (bundleParam) {
-        matchBundleParam = Array.isArray(m.bundles) && m.bundles.some(b => {
-          if (bundleParam === 'quick-clarity')     return b === 'Quick Clarity'          || b === 'quick-clarity';
-          if (bundleParam === 'complete-guidance') return b === 'Complete Guidance'       || b === 'complete-guidance';
-          if (bundleParam === 'dream-seat')        return b === 'Dream Seat Protection™'  || b === 'dream-seat';
-          return false;
-        });
+      if (validBundleParam) {
+        matchBundleParam = Array.isArray(m.bundles) && m.bundles.some(b => normaliseBundleId(b) === validBundleParam);
       }
 
       return matchSearch && matchType && matchCollegeName && matchState && matchBranch && matchRank && matchBundleParam;
@@ -487,18 +550,30 @@ export default function MentorsPage() {
 
     if (sortBy === 'rating')   list = [...list].sort((a, b) => (b.rating   || 5) - (a.rating   || 5));
     if (sortBy === 'sessions') list = [...list].sort((a, b) => (b.sessions || 0) - (a.sessions || 0));
-    if (sortBy === 'priceLow') list = [...list].sort((a, b) => {
-      const price   = id => parseInt((BUNDLE_MAP[id]?.price ?? '₹0').replace(/[^\d]/g, ''));
-      const getBundles = x => x.bundles ? x.bundles.map(bx => BUNDLES.find(y => y.name === bx || y.id === bx)?.id).filter(Boolean) : [];
-      const aMin = getBundles(a).length ? Math.min(...getBundles(a).map(price)) : 0;
-      const bMin = getBundles(b).length ? Math.min(...getBundles(b).map(price)) : 0;
-      return aMin - bMin;
-    });
-    return list;
-  }, [mentors, search, filterCollegeType, filterCollegeName, filterState, filterBranch, rankMin, rankMax, sortBy, bundleParam]);
+    if (sortBy === 'priceLow') {
+      const getMinPrice = mentor => {
+        if (!Array.isArray(mentor.bundles) || mentor.bundles.length === 0) return Infinity;
+        return Math.min(
+          ...mentor.bundles
+            .map(b => BUNDLE_MAP[normaliseBundleId(b)])
+            .filter(Boolean)
+            .map(b => parseInt(b.price.replace(/[^\d]/g, '')))
+        );
+      };
+      list = [...list].sort((a, b) => getMinPrice(a) - getMinPrice(b));
+    }
 
-  const isRankFiltered = rankMin > RANK_MIN || rankMax < RANK_MAX;
-  const hasFilter = search || filterCollegeType || filterCollegeName || filterState || filterBranch || isRankFiltered || bundleParam;
+    return list;
+  }, [mentors, search, filterCollegeType, filterCollegeName, filterState, filterBranch, rankMin, rankMax, isRankFiltered, sortBy, validBundleParam]);
+
+  // ─── FIX (Backend gap — pagination): slice results for current page ──────
+  const totalPages  = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated   = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => { setPage(1); }, [filtered]);
+
+  const hasFilter = search || filterCollegeType || filterCollegeName || filterState || filterBranch || isRankFiltered || validBundleParam;
 
   function clearFilters() {
     setSearch('');
@@ -508,6 +583,8 @@ export default function MentorsPage() {
     setFilterBranch('');
     setRankValues([RANK_MIN, RANK_MAX]);
     setActivePreset(null);
+    setSortBy('default');
+    setPage(1);
     if (bundleParam) navigate(location.pathname, { replace: true });
   }
 
@@ -539,10 +616,18 @@ export default function MentorsPage() {
               <div>
                 <p className="text-sm font-black text-slate-800">Filter by JEE Rank</p>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Showing mentors with rank&nbsp;
-                  <span className="font-bold text-blue-600">{formatRank(rankMin)}</span>
-                  &nbsp;–&nbsp;
-                  <span className="font-bold text-blue-600">{formatRank(rankMax)}</span>
+                  {isRankFiltered ? (
+                    <>
+                      Showing mentors with rank&nbsp;
+                      <span className="font-bold text-blue-600">{formatRank(rankMin)}</span>
+                      &nbsp;–&nbsp;
+                      <span className="font-bold text-blue-600">{formatRank(rankMax)}</span>
+                      {/* FIX: inform user that unranked mentors are excluded when filter is active */}
+                      &nbsp;· <span className="text-amber-500">Mentors without rank data are hidden</span>
+                    </>
+                  ) : (
+                    'Drag to filter by rank range'
+                  )}
                 </p>
               </div>
               <button
@@ -610,7 +695,7 @@ export default function MentorsPage() {
               type="text"
               placeholder="Search by name or college..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setPage(1); }}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition"
             />
           </div>
@@ -634,7 +719,7 @@ export default function MentorsPage() {
           {filterCollegeType && (
             <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">College</label>
-              <select value={filterCollegeName} onChange={e => setFilterCollegeName(e.target.value)}
+              <select value={filterCollegeName} onChange={e => { setFilterCollegeName(e.target.value); setPage(1); }}
                 className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition">
                 <option value="">All {filterCollegeType}</option>
                 {activeCollegeList.map(name => <option key={name} value={name}>{name}</option>)}
@@ -645,7 +730,7 @@ export default function MentorsPage() {
           {/* State */}
           <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">State</label>
-            <select value={filterState} onChange={e => setFilterState(e.target.value)}
+            <select value={filterState} onChange={e => { setFilterState(e.target.value); setPage(1); }}
               className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition">
               <option value="">All States</option>
               {ALL_INDIAN_STATES.map(st => <option key={st} value={st}>{st}</option>)}
@@ -655,7 +740,7 @@ export default function MentorsPage() {
           {/* Department */}
           <div className="flex flex-col gap-1 flex-1 min-w-[110px]">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Department</label>
-            <select value={filterBranch} onChange={e => setFilterBranch(e.target.value)}
+            <select value={filterBranch} onChange={e => { setFilterBranch(e.target.value); setPage(1); }}
               className="rounded-xl border border-slate-200 bg-slate-50 py-2 px-3 text-sm text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition">
               <option value="">All Departments</option>
               {DEPARTMENTS.map(b => <option key={b} value={b}>{b}</option>)}
@@ -678,10 +763,18 @@ export default function MentorsPage() {
         <div className="flex items-center justify-between mb-5">
           <p className="text-sm text-slate-500">
             {loading ? 'Loading mentors...' : (
-              <>Showing <span className="font-bold text-slate-800">{filtered.length}</span> of {mentors.length} mentors</>
+              <>
+                Showing{' '}
+                <span className="font-bold text-slate-800">
+                  {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)}
+                </span>
+                {' '}of{' '}
+                <span className="font-bold text-slate-800">{filtered.length}</span>
+                {' '}mentors
+              </>
             )}
           </p>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+          <select value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(1); }}
             className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs text-slate-600 outline-none focus:border-blue-400 transition">
             <option value="default">Sort: Recommended</option>
             <option value="priceLow">Price: low to high</option>
@@ -692,8 +785,13 @@ export default function MentorsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           <AnimatePresence>
-            {filtered.map((mentor, i) => (
-              <MentorCard key={mentor._id || mentor.id || i} mentor={mentor} index={i} defaultBundle={bundleParam} />
+            {paginated.map((mentor, i) => (
+              <MentorCard
+                key={mentor._id || mentor.id}
+                mentor={mentor}
+                index={i}
+                defaultBundle={validBundleParam}
+              />
             ))}
           </AnimatePresence>
 
@@ -704,6 +802,54 @@ export default function MentorsPage() {
             </div>
           )}
         </div>
+
+        {/* ── FIX (Backend gap — pagination): pagination controls ── */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-10">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              ← Prev
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+              .reduce((acc, p, idx, arr) => {
+                if (idx > 0 && p - arr[idx - 1] > 1) acc.push('…');
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) =>
+                p === '…' ? (
+                  <span key={`ellipsis-${i}`} className="px-2 text-slate-400 text-sm">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className="w-9 h-9 rounded-xl text-sm font-bold border transition"
+                    style={{
+                      backgroundColor: page === p ? '#1e293b' : 'transparent',
+                      color:           page === p ? '#fff'    : '#475569',
+                      borderColor:     page === p ? '#1e293b' : '#e2e8f0',
+                    }}
+                  >
+                    {p}
+                  </button>
+                )
+              )
+            }
+
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </div>
 
     </div>
