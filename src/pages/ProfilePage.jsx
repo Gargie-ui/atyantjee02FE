@@ -836,7 +836,10 @@ export default function ProfilePage({ user, setUser }) {
                       )}
                     </div>
                     
-                    <div className="mt-4 flex flex-wrap gap-3 justify-end border-t border-slate-50 pt-3">
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-50 pt-3">
+                      <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
+                        ℹ️ After payment, connect to WhatsApp from here
+                      </span>
                       <a 
                         href={getDetailedWhatsAppLink(booking)}
                         target="_blank"

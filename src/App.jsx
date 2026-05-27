@@ -39,6 +39,26 @@ function AppContent() {
     return () => window.removeEventListener('openLeadModal', openHandler);
   }, []);
 
+  // Monitor GetGabs WhatsApp widget height to safely style closed vs open state
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach(iframe => {
+        if (iframe.src.includes('getgabs') || iframe.id.includes('gabs') || iframe.src.includes('getredtowp') || iframe.src.includes('app.getgabs.com')) {
+          const height = iframe.offsetHeight || iframe.clientHeight || 0;
+          if (height > 120) {
+            iframe.classList.remove('gabs-closed');
+            iframe.classList.add('gabs-open');
+          } else if (height > 0) {
+            iframe.classList.add('gabs-closed');
+            iframe.classList.remove('gabs-open');
+          }
+        }
+      });
+    }, 300);
+    return () => clearInterval(interval);
+  }, []);
+
   // Set canonical URL for SEO (served from root, will be under /launchpad/ when proxied)
   React.useEffect(() => {
     const baseUrl = 'https://www.atyant.in';

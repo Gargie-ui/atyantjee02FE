@@ -54,9 +54,9 @@ export default function WhatsAppFloatingButton() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ duration: 0.3 }}
-            className="mb-4 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl overflow-hidden"
+            className="mb-4 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl overflow-hidden border border-emerald-100"
           >
-            <div className="bg-gradient-to-r from-[#FF6B2B] to-[#ff8a57] px-4 py-4 text-white flex items-center justify-between">
+            <div className="bg-gradient-to-r from-[#128C7E] to-[#075E54] px-4 py-4 text-white flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-sm">Atyant Assistant</h3>
                 <p className="text-xs text-white/80">Always here to help</p>
@@ -69,7 +69,7 @@ export default function WhatsAppFloatingButton() {
               </button>
             </div>
 
-            <div className="h-80 overflow-y-auto p-4 bg-gray-50 space-y-3 flex flex-col">
+            <div className="h-80 overflow-y-auto p-4 bg-[#efeae2] space-y-3 flex flex-col">
               {messages.map((msg) => (
                 <motion.div
                   key={msg.id}
@@ -78,10 +78,10 @@ export default function WhatsAppFloatingButton() {
                   className={`flex ${msg.from === 'bot' ? 'justify-start' : 'justify-end'}`}
                 >
                   <div
-                    className={`max-w-xs rounded-lg px-4 py-2 text-sm ${
+                    className={`max-w-xs rounded-lg px-4 py-2 text-sm shadow-sm ${
                       msg.from === 'bot'
-                        ? 'bg-white text-gray-900 border border-gray-200'
-                        : 'bg-[#FF6B2B] text-white'
+                        ? 'bg-white text-gray-900 border border-gray-200/50'
+                        : 'bg-[#DCF8C6] text-gray-800'
                     }`}
                   >
                     {msg.text}
@@ -95,7 +95,7 @@ export default function WhatsAppFloatingButton() {
                   animate={{ opacity: 1 }}
                   className="flex justify-start"
                 >
-                  <div className="bg-white text-gray-900 rounded-lg px-4 py-2 border border-gray-200">
+                  <div className="bg-white text-gray-900 rounded-lg px-4 py-2 border border-gray-200/50 shadow-sm">
                     <div className="flex gap-1">
                       <motion.div
                         animate={{ y: [0, -4, 0] }}
@@ -124,12 +124,12 @@ export default function WhatsAppFloatingButton() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-[#FF6B2B]"
+                className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-[#128C7E]"
               />
               <button
                 type="submit"
                 disabled={!input.trim()}
-                className="flex items-center justify-center h-10 w-10 rounded-full bg-[#FF6B2B] text-white disabled:opacity-50 transition hover:bg-[#ff7a42]"
+                className="flex items-center justify-center h-10 w-10 rounded-full bg-[#128C7E] text-white disabled:opacity-50 transition hover:bg-[#075E54]"
               >
                 <Send className="h-4 w-4" />
               </button>
@@ -137,7 +137,6 @@ export default function WhatsAppFloatingButton() {
           </motion.div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }

@@ -77,7 +77,7 @@ export function getDetailedWhatsAppLink(booking) {
   let mentorText = '';
   if (booking.mentorId) {
     const m = booking.mentorId;
-    mentorText = `*🧑‍🏫 Selected Mentor:*\n• *Name:* ${m.name || 'N/A'}\n• *College:* ${m.college || 'N/A'}\n• *Rank:* ${m.rank ? `AIR ${m.rank}` : 'N/A'}\n• *State:* ${m.state || 'N/A'}`;
+    mentorText = `*🧑‍🏫 Selected Mentor:*\n• *Name:* ${m.name || 'N/A'}\n• *Phone:* ${m.phone || 'N/A'}\n• *College:* ${m.college || 'N/A'}\n• *Rank:* ${m.rank ? `AIR ${m.rank}` : 'N/A'}\n• *State:* ${m.state || 'N/A'}`;
   } else {
     mentorText = `*🧑‍🏫 Selected Mentor:*\n• *Mentor:* Not assigned yet (Support will assign soon)`;
   }

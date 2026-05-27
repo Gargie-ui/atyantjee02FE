@@ -40,3 +40,43 @@ svg {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================================================
+   GetGabs WhatsApp Widget Styling (Closed Launcher Only)
+   ========================================================================== */
+
+/* Target the GetGabs widget iframe ONLY when closed (gabs-closed) */
+iframe.gabs-closed {
+  /* Gorgeous glowing pulsing green ring bubble effect (box-shadow only for flawless click accuracy) */
+  animation: whatsapp-gabs-bubble-pulse 2s infinite ease-in-out !important;
+  border-radius: 50% !important;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4) !important;
+  transition: box-shadow 0.3s ease !important;
+}
+
+/* Hover effect on launcher button only */
+iframe.gabs-closed:hover {
+  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.6) !important;
+}
+
+/* Completely clean and reset all styles when open (gabs-open) to prevent any distortion */
+iframe.gabs-open {
+  border-radius: 0 !important;
+  animation: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Pulse bubble ring animation keyframes (box-shadow only to prevent click misalignment) */
+@keyframes whatsapp-gabs-bubble-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.8);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}

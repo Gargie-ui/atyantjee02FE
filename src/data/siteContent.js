@@ -135,7 +135,7 @@ export const COLLEGES_BY_TYPE = {
   ]
 };
 
-export const POPULAR_LANGUAGES = ["English", "Hindi", "Marathi", "Telugu", "Tamil", "Bengali", "Gujarati", "Kannada"];
+export const POPULAR_LANGUAGES = ["English", "Hindi", "Hinglish", "Marathi", "Telugu", "Tamil", "Bengali", "Gujarati", "Kannada"];
 
 export const DEPARTMENTS = [
   "Aerospace / Aeronautical Engineering",
