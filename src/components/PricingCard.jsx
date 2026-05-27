@@ -74,7 +74,9 @@ export function PaymentModal({ open, onClose, planTitle, planPrice, mentorId, on
     }
 
     try {
-      const orderData = await createPaymentOrder({ planId, name, email, phone, mentorId });
+      const payload = { planId, name, email, phone };
+      if (mentorId) payload.mentorId = mentorId;
+      const orderData = await createPaymentOrder(payload);
       const loaded = await loadCashfree();
       if (!loaded) throw new Error('Could not load Cashfree SDK. Check your internet connection.');
 
@@ -218,11 +220,46 @@ export default function PricingCard({
   const navigate = useNavigate();
   const [showAllBonus, setShowAllBonus] = React.useState(false);
 
-  const hasPlanId = Boolean(PLAN_ID_MAP[title]);
+  const [showPayment, setShowPayment] = React.useState(false);
+
+  // Auto-resume checkout for Starter Clarity (mentor-less) package
+  React.useEffect(() => {
+    if (title === 'Starter Clarity') {
+      const pending = localStorage.getItem('atyant_pending_booking');
+      if (pending) {
+        try {
+          const { mentorId, bundleId } = JSON.parse(pending);
+          if (bundleId === 'starter-clarity' && !mentorId) {
+            const token = localStorage.getItem('user_token');
+            if (token) {
+              setShowPayment(true);
+              localStorage.removeItem('atyant_pending_booking');
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }, [title]);
 
   function handleCTA(e) {
     e.preventDefault();
     const planId = PLAN_ID_MAP[title];
+    if (planId === 'starter-clarity') {
+      const token = localStorage.getItem('user_token');
+      if (!token) {
+        localStorage.setItem('atyant_pending_booking', JSON.stringify({
+          mentorId: null,
+          bundleId: 'starter-clarity',
+        }));
+        navigate('/login', { state: { message: 'Please sign up or log in as a Student to buy this mentorship plan.' } });
+        return;
+      }
+      setShowPayment(true);
+      return;
+    }
+
     if (planId) {
       navigate(`/mentors?bundle=${planId}`);
     } else {
@@ -384,6 +421,17 @@ export default function PricingCard({
           </p>
         </div>
       </motion.div>
+
+      {showPayment && (
+        <PaymentModal
+          open={showPayment}
+          onClose={() => setShowPayment(false)}
+          planTitle={title}
+          planPrice={price}
+          mentorId={null}
+          onSuccessRedirectUrl={getWhatsAppLink(title)}
+        />
+      )}
     </>
   );
 }

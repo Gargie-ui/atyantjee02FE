@@ -37,7 +37,16 @@ export default function AuthPage({ setUser }) {
       // Check for pending booking redirect
       const pendingBooking = localStorage.getItem('atyant_pending_booking');
       if (pendingBooking && res.user.role === 'student') {
-        navigate('/mentors');
+        try {
+          const parsed = JSON.parse(pendingBooking);
+          if (parsed.bundleId === 'starter-clarity') {
+            navigate('/');
+          } else {
+            navigate('/mentors');
+          }
+        } catch (e) {
+          navigate('/mentors');
+        }
       } else {
         navigate(res.user.role === 'mentor' ? '/profile' : '/');
       }
