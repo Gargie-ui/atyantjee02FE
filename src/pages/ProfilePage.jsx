@@ -8,61 +8,78 @@ import { getDetailedWhatsAppLink } from '../utils/whatsapp';
 
 const AVAILABLE_BUNDLES = [
   {
-    id: 'quick-clarity',
-    name: 'Quick Clarity',
-    price: 399,
-    originalPrice: 799,
-    discount: '50% OFF – Limited Time Offer',
+    id: 'starter-clarity',
+    name: 'Starter Clarity',
+    price: 99,
+    originalPrice: 399,
+    discount: '75% OFF – Lowest Entry Barrier',
     icon: '⚡',
-    desc: 'For students who want quick clarity on options and next steps.',
+    desc: 'For students who want quick help for one major confusion. Real guidance from seniors.',
     includes: [
-      '20–30 min focused session',
+      '10–15 min quick guidance call',
       'One major confusion solved',
-      'Rank & options quick review',
-      'Post-call action summary',
-      '24-hour WhatsApp support',
+      'Quick JoSAA direction',
+      'Rank-based option clarity',
+      'Personalized mentor matching',
     ],
-    mentorNote: 'You commit to 1 focused session + post-call action summary + 24hr WhatsApp availability.',
+    mentorNote: 'You commit to a 10–15 min quick guidance call with rank-based options overview.',
   },
   {
     id: 'complete-guidance',
     name: 'Complete Guidance',
-    price: 999,
-    originalPrice: 2499,
+    price: 399,
+    originalPrice: 999,
     discount: '60% OFF – JoSAA Launch Pricing',
-    badge: '⭐ Most Popular',
     icon: '🚀',
-    desc: 'For students who want complete strategy, clarity & guided decision-making.',
+    desc: 'Your complete JoSAA strategy partner. Structured guidance before choice filling.',
     includes: [
-      '2 in-depth guidance sessions',
-      'Personalized strategy & roadmap',
+      '2 strategy sessions',
       'Branch vs college analysis',
       'Freeze / Float guidance',
-      'WhatsApp support (3–5 days)',
-      'Call summary PDF',
-      'Resource packs & strategy sheets',
+      'Preference order strategy',
+      '3–5 day WhatsApp support',
+      '🎁 Includes Senior Insights Kit',
     ],
-    mentorNote: 'You commit to 2 guidance sessions + call summary PDF + 3–5 day WhatsApp support.',
+    mentorNote: 'You commit to 2 strategy sessions, choice order strategy, and 3–5 day WhatsApp support + sharing the Insights Kit.',
   },
   {
-    id: 'dream-seat',
-    name: 'Dream Seat Protection™',
-    price: 1799,
-    originalPrice: 5999,
-    discount: '70% OFF – Priority Round Support',
+    id: 'complete-round',
+    name: 'Complete Round Support',
+    price: 899,
+    originalPrice: 1999,
+    discount: '55% OFF – Most Popular Package',
+    badge: '⭐ Most Popular',
     icon: '🛡️',
-    desc: 'For parents & students seeking peace of mind and end-to-end handholding.',
+    desc: 'Full JoSAA + CSAB support till final allotment. Peace of mind during every counselling round.',
     includes: [
-      'Everything in Complete Guidance, plus:',
-      'Round-wise JoSAA + CSAB support',
-      'Freeze / Float / Slide strategy guidance',
-      'Dedicated parent discussion session',
-      'Preference order optimization',
+      'Everything in ₹399 package, plus:',
+      'Round-by-round JoSAA + CSAB support',
+      'Dedicated mentor throughout',
       'Priority WhatsApp support',
-      'Backup strategy if allotment changes',
-      'Dedicated mentor till final rounds',
+      'Backup planning if allotment changes',
+      'Support till final rounds',
+      '🎁 Premium Advantage Pack included',
     ],
-    mentorNote: 'You commit to dedicated, emotional reassurance and complete cross-round JoSAA/CSAB support for the family till the final admission lists.',
+    mentorNote: 'You commit to being their dedicated personal mentor through all rounds of JoSAA + CSAB till final seat allotment.',
+  },
+  {
+    id: 'ultimate-peace',
+    name: 'Ultimate Peace of Mind',
+    price: 1299,
+    originalPrice: 2999,
+    discount: '56% OFF – 1-on-1 Premium',
+    icon: '👑',
+    desc: 'Highest level of personal support. 1-on-1 premium guidance from start to finish.',
+    includes: [
+      'Everything in ₹899 package, plus:',
+      'Personal 1-on-1 mentor',
+      'Personalized preference review',
+      'Final decision support calls',
+      'Unlimited WhatsApp access',
+      'Post-allotment transition guidance',
+      '🎁 Bonus Guides Included',
+    ],
+    mentorNote: 'You commit to ultimate handholding, unlimited WhatsApp, preference reviews, and college transition guidance.',
   },
 ];
 
@@ -216,9 +233,18 @@ export default function ProfilePage({ user, setUser }) {
         setGender(user.gender || '');
         
         const mappedBundles = (user.bundles || []).map(b => {
-          if (b === 'Quick Clarity') return 'quick-clarity';
-          if (b === 'Complete Guidance') return 'complete-guidance';
-          if (b === 'Dream Seat Protection™') return 'dream-seat';
+          if (b === 'Quick Clarity' || b === 'quick-clarity' || b === 'Starter Clarity' || b === 'starter-clarity') {
+            return 'starter-clarity';
+          }
+          if (b === 'Complete Guidance' || b === 'complete-guidance') {
+            return 'complete-guidance';
+          }
+          if (b === 'Dream Seat Protection™' || b === 'dream-seat' || b === 'Complete Round Support' || b === 'complete-round') {
+            return 'complete-round';
+          }
+          if (b === 'Ultimate Peace of Mind' || b === 'ultimate-peace') {
+            return 'ultimate-peace';
+          }
           return b;
         });
         setBundles(mappedBundles);

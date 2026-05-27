@@ -4,36 +4,45 @@ export function getInclusions(planId, planTitle) {
   const normalizedId = (planId || '').toLowerCase();
   const normalizedTitle = (planTitle || '').toLowerCase();
 
-  if (normalizedId.includes('dream') || normalizedTitle.includes('dream')) {
+  if (normalizedId.includes('ultimate') || normalizedTitle.includes('ultimate') || normalizedTitle.includes('peace')) {
     return [
-      'Everything in Complete Guidance',
-      'Round-wise JoSAA + CSAB support',
-      'Freeze / Float / Slide strategy',
-      'Parent clarity session',
-      'Final preference list review',
+      'Everything in Complete Round Support',
+      'Personal 1-on-1 mentor',
+      'Personalized preference review',
+      'Final decision support calls',
+      'Unlimited WhatsApp access',
+      'Post-allotment transition guidance',
+      '🎁 Bonus: Interview & Aptitude Guide',
+      '🎁 Bonus: Extra mentor sessions (if needed)',
+    ];
+  }
+  if (normalizedId.includes('round') || normalizedTitle.includes('round') || normalizedId.includes('dream') || normalizedTitle.includes('dream')) {
+    return [
+      'Everything in Complete Guidance package',
+      'Round-by-round JoSAA + CSAB support',
+      'Dedicated mentor throughout',
       'Priority WhatsApp support',
-      'Backup & alternative pathway planning',
-      'Dedicated till final round',
+      'Backup planning if allotment changes',
+      'Support till final rounds',
+      '🎁 Premium Advantage Pack included',
     ];
   }
   if (normalizedId.includes('complete') || normalizedTitle.includes('complete')) {
     return [
-      '2 in-depth sessions',
-      'Personalized strategy & roadmap',
+      '2 strategy sessions',
       'Branch vs college analysis',
       'Freeze / Float guidance',
-      'WhatsApp support (3–5 days)',
-      'Session recording',
-      'MOM / Summary PDF',
-      'Resource packs & strategy sheets',
+      'Preference order strategy',
+      '3–5 day WhatsApp support',
+      '🎁 Includes Senior Insights Kit',
     ];
   }
   return [
-    '20–30 min focused session',
+    '10–15 min quick guidance call',
     'One major confusion solved',
-    'Rank & options quick review',
-    'Post-call key summary',
-    '24-hour WhatsApp support',
+    'Quick JoSAA direction',
+    'Rank-based option clarity',
+    'Personalized mentor matching',
   ];
 }
 

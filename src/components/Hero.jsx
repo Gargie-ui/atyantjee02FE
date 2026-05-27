@@ -43,20 +43,36 @@ export default function Hero({ activeTab, onTabChange }) {
             </div>
 
             {/* Heading */}
-            <h1 className="max-w-2xl text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">
-              JEE rank is out. <br />
+            <h1 className="max-w-2xl text-4xl font-black leading-none sm:text-5xl lg:text-6.5xl uppercase tracking-tight">
+              RIGHT GUIDANCE TODAY. <br />
 
-              <span className="italic text-[#FF6B2B]">
-                Don't waste it on the wrong college.
+              <span className="italic text-[#FF6B2B] mt-2 block lowercase first-letter:uppercase">
+                better college. better future.
               </span>
             </h1>
 
             {/* Description */}
-            <p className="mt-6 max-w-xl text-base leading-8 text-white/70 lg:text-lg">
-              Talk to current NIT/IIT Top Collage students who filled JoSAA
-              with a rank like yours. Get your choice list right
-              before the round closes.
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-white/80 lg:text-lg font-medium">
+              Talk to real IIT/NIT & top college seniors who recently went through JoSAA counselling themselves.
             </p>
+
+            {/* Trust Checklist Bar */}
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-white/90">
+              {[
+                '100+ Verified Mentors',
+                'Real Conversations, Not Generic Advice',
+                'Private & Confidential',
+                'Rank-Similar Mentor Matching',
+                'Trusted by Students & Parents',
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black">
+                    ✓
+                  </div>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
 
             {/* Buttons */}
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">

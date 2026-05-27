@@ -437,16 +437,45 @@ function PricingSection() {
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3 relative z-20">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 relative z-20">
           {pricingPlans.map((plan) => (
             <PricingCard key={plan.title} {...plan} />
           ))}
         </div>
 
+        {/* Why Choose Atyant Section */}
+        <div className="mt-20 max-w-4xl mx-auto bg-[#0B0F2E] rounded-[2.5rem] p-8 sm:p-12 text-white relative overflow-hidden shadow-2xl shadow-[#0B0F2E]/20 border border-white/5">
+          <div className="absolute right-0 top-0 w-72 h-72 bg-gradient-to-br from-orange-500/10 to-transparent blur-3xl" />
+          <div className="relative z-10">
+            <h3 className="text-2xl sm:text-3xl font-black text-center mb-10 tracking-tight uppercase">
+              ✨ Why Students Choose Atyant
+            </h3>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {[
+                'Talk to seniors with ranks like yours',
+                'Real JoSAA experience from recent seniors',
+                'Honest advice, not sugarcoating',
+                'Affordable guidance starting at just ₹99',
+                'Support from choice filling till allotment',
+                'No bots. Only real seniors.',
+              ].map((point) => (
+                <div key={point} className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/5 hover:border-white/10 transition-all hover:scale-[1.02]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/25 text-emerald-400 text-sm font-black">
+                    ✓
+                  </div>
+                  <span className="text-sm sm:text-base font-bold text-white/90">
+                    {point}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Bottom trust line */}
-        <div className="mt-10 text-center">
+        <div className="mt-16 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">🔥 Limited Time Early Launch Offer</p>
-          <p className="mt-2 text-base font-semibold text-slate-600">Trusted Seniors. Real Insights. Zero Regrets.</p>
+          <p className="mt-2 text-base font-semibold text-slate-600">Trusted Seniors. Real Insights. Better Decisions.</p>
         </div>
       </div>
     </motion.section>

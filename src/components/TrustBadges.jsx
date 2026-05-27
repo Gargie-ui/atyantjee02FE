@@ -1,31 +1,28 @@
 import React from 'react';
-import { Users, Building2, Star } from 'lucide-react';
 
-const badges = [
-  { id: 1, title: '12k+', subtitle: 'Students Guided', icon: Users, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-  { id: 2, title: '100+', subtitle: 'Colleges Covered', icon: Building2, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  { id: 3, title: '4.9/5', subtitle: 'Average Rating', icon: Star, color: 'text-[#FFC900]', bg: 'bg-[#FFC900]/10' },
+const trustItems = [
+  '100+ Verified Mentors',
+  'Real Conversations, Not Generic Advice',
+  'Private & Confidential',
+  'Rank-Similar Mentor Matching',
+  'Trusted by Students & Parents',
 ];
 
 export default function TrustBadges() {
   return (
-    <div className="bg-[#0B0F2E] border-y border-white/5 py-8 sm:py-10">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
-          {badges.map((b) => {
-            const Icon = b.icon;
-            return (
-              <div key={b.id} className="flex items-center justify-center gap-5 py-4 sm:py-0 transition-transform hover:scale-105">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${b.bg} ${b.color} shadow-lg ring-1 ring-white/10`}>
-                  <Icon className="h-7 w-7" />
-                </div>
-                <div className="text-left">
-                  <div className="text-2xl font-black text-white tracking-tight">{b.title}</div>
-                  <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">{b.subtitle}</div>
-                </div>
+    <div className="bg-[#0B0F2E] border-y border-white/5 py-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-center">
+          {trustItems.map((item) => (
+            <div key={item} className="flex items-center gap-2.5 transition-all hover:scale-[1.03]">
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-black shadow-sm shadow-emerald-500/10">
+                ✓
               </div>
-            );
-          })}
+              <span className="text-xs sm:text-sm font-bold text-white/90 tracking-wide">
+                {item}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

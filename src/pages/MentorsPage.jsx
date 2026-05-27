@@ -12,42 +12,57 @@ import { ALL_INDIAN_STATES, COLLEGES_BY_TYPE, DEPARTMENTS } from '../data/siteCo
 // ─── Bundle definitions ────────────────────────────────────────────────────
 const BUNDLES = [
   {
-    id: 'quick-clarity',
-    name: 'Quick Clarity',
-    sub: '20–30 min focused session',
-    price: '₹399',
-    originalPrice: '₹799',
-    discount: '50% OFF',
+    id: 'starter-clarity',
+    name: 'Starter Clarity',
+    sub: '10–15 min quick guidance call',
+    price: '₹99',
+    originalPrice: '₹399',
+    discount: '75% OFF',
     color: '#1D9E75',
     bg: '#E1F5EE',
-    wa: 'Hi+Atyant%2C+I+am+interested+in+Quick+Clarity.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
+    wa: 'Hi+Atyant%2C+I+am+interested+in+Starter+Clarity.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
   },
   {
     id: 'complete-guidance',
     name: 'Complete Guidance',
-    sub: '2 in-depth guidance sessions',
-    price: '₹999',
-    originalPrice: '₹2,499',
+    sub: '2 strategy sessions + Insights Kit',
+    price: '₹399',
+    originalPrice: '₹999',
     discount: '60% OFF',
-    popular: true,
     color: '#FF6B2B',
     bg: '#FFF3EE',
     wa: 'Hi+Atyant%2C+I+am+interested+in+Complete+Guidance.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+preferred+branch%3A%0AMy+main+confusion%3A%0A',
   },
   {
-    id: 'dream-seat',
-    name: 'Dream Seat Protection™',
-    sub: 'Round-wise JoSAA + CSAB support',
-    price: '₹1,799',
-    originalPrice: '₹5,999',
-    discount: '70% OFF',
+    id: 'complete-round',
+    name: 'Complete Round Support',
+    sub: 'Full JoSAA + CSAB support',
+    price: '₹899',
+    originalPrice: '₹1,999',
+    discount: '55% OFF',
+    popular: true,
+    color: '#E28743',
+    bg: '#FFFBF5',
+    wa: 'Hi+Atyant%2C+I+am+interested+in+Complete+Round+Support.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
+  },
+  {
+    id: 'ultimate-peace',
+    name: 'Ultimate Peace of Mind',
+    sub: '1-on-1 premium guidance from start to finish',
+    price: '₹1,299',
+    originalPrice: '₹2,999',
+    discount: '56% OFF',
     color: '#534AB7',
     bg: '#EEEDFE',
-    wa: 'Hi+Atyant%2C+I+am+interested+in+Dream+Seat+Protection.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
+    wa: 'Hi+Atyant%2C+I+am+interested+in+Ultimate+Peace+of+Mind.%0A%0AMy+exam%3A%0AMy+rank%2Fpercentile%3A%0AMy+main+confusion%3A%0A',
   },
 ];
 
-const BUNDLE_MAP = Object.fromEntries(BUNDLES.map(b => [b.id, b]));
+const BUNDLE_MAP = {
+  ...Object.fromEntries(BUNDLES.map(b => [b.id, b])),
+  'quick-clarity': BUNDLES[0], // alias Starter Clarity
+  'dream-seat': BUNDLES[2],    // alias Complete Round Support
+};
 
 const AVATAR_COLORS = [
   { bg: '#E6F1FB', text: '#0C447C' },
@@ -310,9 +325,18 @@ export default function MentorsPage() {
       let matchBundleParam = true;
       if (bundleParam) {
         matchBundleParam = Array.isArray(m.bundles) && m.bundles.some(b => {
-          if (bundleParam === 'quick-clarity') return b === 'Quick Clarity' || b === 'quick-clarity';
-          if (bundleParam === 'complete-guidance') return b === 'Complete Guidance' || b === 'complete-guidance';
-          if (bundleParam === 'dream-seat') return b === 'Dream Seat Protection™' || b === 'dream-seat';
+          if (bundleParam === 'quick-clarity' || bundleParam === 'starter-clarity') {
+            return b === 'Quick Clarity' || b === 'quick-clarity' || b === 'Starter Clarity' || b === 'starter-clarity';
+          }
+          if (bundleParam === 'complete-guidance') {
+            return b === 'Complete Guidance' || b === 'complete-guidance';
+          }
+          if (bundleParam === 'dream-seat' || bundleParam === 'complete-round') {
+            return b === 'Dream Seat Protection™' || b === 'dream-seat' || b === 'Complete Round Support' || b === 'complete-round';
+          }
+          if (bundleParam === 'ultimate-peace') {
+            return b === 'Ultimate Peace of Mind' || b === 'ultimate-peace';
+          }
           return false;
         });
       }
