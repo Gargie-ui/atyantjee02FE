@@ -34,7 +34,8 @@ function HowItWorksSection() {
   return (
     <motion.section
       id="how-it-works"
-      className="relative overflow-hidden bg-[#F8FAFC] px-4 py-24 sm:px-6 lg:px-8"
+      className="relative bg-[#F8FAFC] px-4 py-24 sm:px-6 lg:px-8"
+      style={{ overflow: 'clip' }}
       variants={sectionVariants}
       initial="hidden"
       whileInView="visible"
@@ -489,7 +490,8 @@ function FAQSection() {
   return (
     <motion.section
       id="faq"
-      className="relative overflow-hidden bg-[#F8FAFC] px-4 pt-10 pb-24 sm:px-6 lg:px-8"
+      className="relative bg-[#F8FAFC] px-4 pt-10 pb-24 sm:px-6 lg:px-8"
+      style={{ overflow: 'clip' }}
       variants={sectionVariants}
       initial="hidden"
       whileInView="visible"

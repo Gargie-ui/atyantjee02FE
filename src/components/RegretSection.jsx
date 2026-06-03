@@ -165,7 +165,7 @@ function InteractiveCard({ story, idx }) {
 
 export default function RegretSection() {
   return (
-    <section className="relative overflow-hidden bg-slate-50 px-4 py-12 lg:py-16 sm:px-6 lg:px-8">
+    <section className="relative bg-slate-50 px-4 py-12 lg:py-16 sm:px-6 lg:px-8" style={{ overflow: 'clip' }}>
       {/* Background Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#000000_2px,transparent_2px),linear-gradient(to_bottom,#000000_2px,transparent_2px)] opacity-[0.05] bg-[size:40px_40px]" />
       

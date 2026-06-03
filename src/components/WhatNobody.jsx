@@ -64,7 +64,7 @@ const card = {
 
 export default function WhatNobody() {
   return (
-    <section className="relative overflow-hidden bg-[#0B0F2E] px-4 py-12 lg:py-16 sm:px-6 lg:px-8">
+    <section className="relative bg-[#0B0F2E] px-4 py-12 lg:py-16 sm:px-6 lg:px-8" style={{ overflow: 'clip' }}>
       
       {/* DECORATIVE FLOATING ORBS */}
       <div className="pointer-events-none absolute -top-24 left-[-80px] h-96 w-96 rounded-full bg-blue-600/20 blur-[100px]" />

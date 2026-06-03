@@ -194,7 +194,8 @@ export default function DecisionEngine() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.1 }}
       transition={{ duration: 0.7 }}
-      className="bg-[#0B0F2E] px-4 py-16 lg:py-24 sm:px-6 lg:px-8 relative overflow-hidden"
+      className="bg-[#0B0F2E] px-4 py-16 lg:py-24 sm:px-6 lg:px-8 relative"
+      style={{ overflow: 'clip' }}
     >
       {/* Ambient blobs */}
       <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-[#FF6B2B]/10 blur-[120px] pointer-events-none" />

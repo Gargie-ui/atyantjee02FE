@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 export default function Hero({ activeTab, onTabChange }) {
   const navigate = useNavigate();
   return (
-    <div className="relative overflow-hidden bg-[#0B0F2E] text-white">
+    <div className="relative bg-[#0B0F2E] text-white" style={{ overflow: 'clip' }}>
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,107,43,0.22),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(63,94,251,0.15),_transparent_30%)]" />
 

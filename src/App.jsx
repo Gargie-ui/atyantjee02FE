@@ -85,7 +85,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white font-sans antialiased">
+    <div className="min-h-screen bg-white font-sans antialiased" style={{ overflowX: 'clip' }}>
       <Navbar 
         onLeadClick={() => setShowLeadModal(true)} 
         activeTab={activeTab}
