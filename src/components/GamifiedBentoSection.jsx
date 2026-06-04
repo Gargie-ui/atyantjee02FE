@@ -4,7 +4,7 @@ import { ShieldCheck, MessageCircle, Star, CheckCircle2, TrendingUp, AlertTriang
 
 export default function GamifiedBentoSection() {
   return (
-    <section id="how-it-works" className="py-16 bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 relative" style={{ overflow: 'clip' }}>
+    <section id="how-it-works" className="py-16 bg-[#F8FAFC] px-4 sm:px-6 lg:px-8 relative" style={{ overflow: 'hidden' }}>
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#000000_2px,transparent_2px),linear-gradient(to_bottom,#000000_2px,transparent_2px)] opacity-[0.1] bg-[size:40px_40px]" />
       <div className="max-w-7xl mx-auto relative z-10">
 

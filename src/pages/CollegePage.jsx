@@ -25,7 +25,7 @@ export default function CollegePage({ activeTab, onTabChange }) {
       <motion.section
         id="top"
         className="relative bg-[#0B0F2E] text-white"
-        style={{ overflow: 'clip' }}
+        style={{ overflow: 'hidden' }}
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
