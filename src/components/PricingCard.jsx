@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, X, Sparkles, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getWhatsAppLink } from '../utils/whatsapp';
-import { createPaymentOrder, verifyPayment, getUserMe } from '../utils/api';
+import { createPaymentOrder, getUserMe } from '../utils/api';
 
 // Map frontend plan titles → backend planId
 const PLAN_ID_MAP = {
@@ -222,23 +222,23 @@ export default function PricingCard({
 
   const [showPayment, setShowPayment] = React.useState(false);
 
-  // Auto-resume checkout for Starter Clarity (mentor-less) package
+  // Auto-resume checkout after login redirect (any plan)
   React.useEffect(() => {
-    if (title === 'Starter Clarity') {
-      const pending = localStorage.getItem('atyant_pending_booking');
-      if (pending) {
-        try {
-          const { mentorId, bundleId } = JSON.parse(pending);
-          if (bundleId === 'starter-clarity' && !mentorId) {
-            const token = localStorage.getItem('user_token');
-            if (token) {
-              setShowPayment(true);
-              localStorage.removeItem('atyant_pending_booking');
-            }
+    const planId = PLAN_ID_MAP[title];
+    if (!planId) return;
+    const pending = localStorage.getItem('atyant_pending_booking');
+    if (pending) {
+      try {
+        const { bundleId } = JSON.parse(pending);
+        if (bundleId === planId) {
+          const token = localStorage.getItem('user_token');
+          if (token) {
+            setShowPayment(true);
+            localStorage.removeItem('atyant_pending_booking');
           }
-        } catch (e) {
-          console.error(e);
         }
+      } catch (e) {
+        console.error(e);
       }
     }
   }, [title]);
@@ -246,25 +246,25 @@ export default function PricingCard({
   function handleCTA(e) {
     e.preventDefault();
     const planId = PLAN_ID_MAP[title];
-    if (planId === 'starter-clarity') {
-      const token = localStorage.getItem('user_token');
-      if (!token) {
-        localStorage.setItem('atyant_pending_booking', JSON.stringify({
-          mentorId: null,
-          bundleId: 'starter-clarity',
-        }));
-        navigate('/login', { state: { message: 'Please sign up or log in as a Student to buy this mentorship plan.' } });
-        return;
-      }
-      setShowPayment(true);
+
+    // No planId mapped — fall back to WhatsApp
+    if (!planId) {
+      window.open(getWhatsAppLink(title), '_blank');
       return;
     }
 
-    if (planId) {
-      navigate(`/mentors?bundle=${planId}`);
-    } else {
-      window.open(getWhatsAppLink(title), '_blank');
+    // Require login before payment
+    const token = localStorage.getItem('user_token');
+    if (!token) {
+      localStorage.setItem('atyant_pending_booking', JSON.stringify({
+        bundleId: planId,
+      }));
+      navigate('/login', { state: { message: 'Please sign up or log in as a Student to buy this mentorship plan.' } });
+      return;
     }
+
+    // Open payment modal directly — no mentor redirect
+    setShowPayment(true);
   }
 
   const visibleBonus = showAllBonus ? bonus : bonus?.slice(0, 3);
@@ -283,7 +283,7 @@ export default function PricingCard({
     checkColor = 'text-orange-500';
     btnClass = 'bg-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-500/20';
   } else if (colorTheme === 'navy-glow') {
-    cardClass = 'border-2 border-orange-500 bg-[#0B0F2E] text-white shadow-[0_20px_80px_rgba(255,107,43,0.3)] ring-4 ring-orange-500/25 md:scale-[1.04] z-10 hover:shadow-[0_0_60px_rgba(255,107,43,0.55)]';
+    cardClass = 'border-2 border-orange-500 bg-[#0B0F2E] text-white shadow-[0_20px_80px_rgba(255,107,43,0.3)] ring-4 ring-orange-500/25 z-10 hover:shadow-[0_0_60px_rgba(255,107,43,0.55)]';
     checkColor = 'text-orange-400';
     btnClass = 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-xl shadow-orange-500/40';
   } else if (colorTheme === 'purple') {
@@ -295,7 +295,7 @@ export default function PricingCard({
   return (
     <>
       <motion.div
-        whileHover={{ y: -8, scale: colorTheme === 'navy-glow' ? 1.05 : 1.02 }}
+        whileHover={{ y: -8, scale: 1.02 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
         className={`relative flex flex-col rounded-[2.2rem] transition-all duration-300 ${cardClass}`}
       >
@@ -306,7 +306,7 @@ export default function PricingCard({
           </div>
         )}
 
-        <div className="p-8 flex flex-col flex-1">
+        <div className="p-5 sm:p-8 flex flex-col flex-1">
 
           {/* Discount pill */}
           {discount && (

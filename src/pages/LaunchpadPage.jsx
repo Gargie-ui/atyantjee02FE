@@ -406,11 +406,11 @@ function PricingSection() {
   return (
     <motion.section
       id="pricing"
-      className="bg-[#f6f7fb] px-4 py-12 sm:px-6 lg:px-8 overflow-hidden relative"
+      className="bg-[#f6f7fb] px-4 py-12 sm:px-6 lg:px-8 overflow-x-hidden relative"
       variants={sectionVariants}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: true, amount: 0.05 }}
     >
       {/* Background Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-blue-500/10 to-transparent blur-[100px] pointer-events-none" />
@@ -438,7 +438,7 @@ function PricingSection() {
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 relative z-20">
+        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 relative z-20">
           {pricingPlans.map((plan) => (
             <PricingCard key={plan.title} {...plan} />
           ))}
