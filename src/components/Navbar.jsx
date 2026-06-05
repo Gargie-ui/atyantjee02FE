@@ -31,12 +31,19 @@ export default function Navbar({ onLeadClick, activeTab, onTabChange, user }) {
             Home
           </button>
           
-          <button 
+          <button
             onClick={() => onTabChange && onTabChange('mentors')}
             className={`text-sm font-medium transition flex items-center gap-1 ${activeTab === 'mentors' ? 'text-blue-400' : 'text-white hover:text-blue-400'}`}
           >
             Find Mentors <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500/20 text-[9px] font-bold text-blue-400 ring-1 ring-blue-500/50">NEW</span>
           </button>
+
+          <Link
+            to="/predictor"
+            className={`text-sm font-medium transition flex items-center gap-1.5 ${activeTab === 'predictor' ? 'text-[#c9a84c]' : 'text-white hover:text-[#c9a84c]'}`}
+          >
+            College Predictor <span className="text-[9px] font-bold text-[#1a1814] bg-[#c9a84c] px-1.5 py-0.5 rounded-md tracking-wide">PRO</span>
+          </Link>
 
           {user && (
             <Link 

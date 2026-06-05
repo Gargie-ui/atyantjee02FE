@@ -10,6 +10,7 @@ import CollegePage from './pages/CollegePage';
 import FinalYearPage from './pages/FinalYearPage';
 import WorkingProPage from './pages/WorkingProPage';
 import MentorsPage from './pages/MentorsPage';
+import RankRadarPage from './pages/RankRadarPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import WhatsAppFloatingButton from './components/WhatsAppFloatingButton';
@@ -77,7 +78,7 @@ function AppContent() {
     link.href = canonicalUrl;
   }, []);
 
-  const activeTab = location.pathname === '/mentors' ? 'mentors' : location.pathname === '/college' ? 'college' : location.pathname === '/finalyear' ? 'finalyear' : location.pathname === '/workingpro' ? 'workingpro' : 'after12th';
+  const activeTab = location.pathname === '/mentors' ? 'mentors' : location.pathname === '/predictor' ? 'predictor' : location.pathname === '/college' ? 'college' : location.pathname === '/finalyear' ? 'finalyear' : location.pathname === '/workingpro' ? 'workingpro' : 'after12th';
 
   const handleTabChange = (tab) => {
     if (tab === 'after12th') navigate('/');
@@ -113,6 +114,11 @@ function AppContent() {
           <Route path="/workingpro" element={
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
               <WorkingProPage activeTab={activeTab} onTabChange={handleTabChange} />
+            </motion.div>
+          } />
+          <Route path="/predictor" element={
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
+              <RankRadarPage />
             </motion.div>
           } />
           <Route path="/mentors" element={
