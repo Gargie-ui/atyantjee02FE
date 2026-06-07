@@ -45,7 +45,6 @@ export default function Hero({ activeTab, onTabChange }) {
             {/* Heading */}
             <h1 className="max-w-2xl text-4xl font-black leading-none sm:text-5xl lg:text-6.5xl uppercase tracking-tight">
               RIGHT GUIDANCE TODAY. <br />
-
               <span className="italic text-[#FF6B2B] mt-2 block lowercase first-letter:uppercase">
                 better college. better future.
               </span>
@@ -56,40 +55,22 @@ export default function Hero({ activeTab, onTabChange }) {
               Talk to real IIT/NIT & top college seniors who recently went through JoSAA counselling themselves.
             </p>
 
-            {/* Trust Checklist Bar */}
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-white/90">
-              {[
-                '100+ Verified Mentors',
-                'Real Conversations, Not Generic Advice',
-                'Private & Confidential',
-                'Rank-Similar Mentor Matching',
-                'Trusted by Students & Parents',
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black">
-                    ✓
-                  </div>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-
             {/* Buttons */}
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <button
-                onClick={() => navigate('/mentors')}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FF6B2B] px-7 py-4 text-sm font-semibold text-white shadow-2xl shadow-[#FF6B2B]/30 transition duration-300 hover:bg-[#ff7a42] hover:text-white hover:shadow-[0_0_24px_rgba(255,107,43,0.45)] hover:scale-105"
-              >
-                Find my mentor
-                <ArrowRight className="h-4 w-4" />
-              </button>
-
+            <div className="mt-8 flex flex-col items-center gap-4 w-full max-w-sm">
               <a
                 href="#pricing"
-                className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white px-7 py-4 text-sm font-semibold text-[#0B0F2E] shadow-xl shadow-[#FF6B2B]/10 transition duration-300 hover:bg-[#FF6B2B] hover:text-white hover:shadow-[0_0_24px_rgba(255,107,43,0.45)] hover:scale-105"
+                className="w-full inline-flex items-center justify-center rounded-full border-2 border-[#FF6B2B] bg-white px-10 py-5 text-2xl font-black text-[#FF6B2B] shadow-[0_0_28px_rgba(255,107,43,0.4)] ring-2 ring-[#FF6B2B]/20 transition duration-300 hover:bg-[#FF6B2B] hover:text-white hover:shadow-[0_0_40px_rgba(255,107,43,0.65)] hover:scale-105 tracking-wide"
               >
                 See counselling plans
               </a>
+
+              <button
+                onClick={() => navigate('/mentors')}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FF6B2B]/80 px-6 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#FF6B2B]/20 transition duration-300 hover:bg-[#ff7a42] hover:shadow-[0_0_16px_rgba(255,107,43,0.35)] hover:scale-105"
+              >
+                Find my mentor
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           </motion.div>
 
@@ -114,15 +95,9 @@ export default function Hero({ activeTab, onTabChange }) {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-white/60">
-                      Career Match
-                    </p>
-
-                    <h3 className="mt-1 text-3xl font-black text-white">
-                      92%
-                    </h3>
+                    <p className="text-sm text-white/60">Career Match</p>
+                    <h3 className="mt-1 text-3xl font-black text-white">92%</h3>
                   </div>
-
                   <div className="rounded-2xl bg-[#FF6B2B]/20 px-4 py-2 text-sm font-semibold text-[#FF6B2B]">
                     AI Powered
                   </div>
@@ -130,15 +105,9 @@ export default function Hero({ activeTab, onTabChange }) {
 
                 <div className="mt-6 space-y-4">
                   <div className="rounded-2xl bg-white/5 p-4">
-                    <p className="text-xs text-white/50">
-                      Recommended Branch
-                    </p>
-
+                    <p className="text-xs text-white/50">Recommended Branch</p>
                     <div className="mt-2 flex items-center justify-between">
-                      <h4 className="text-lg font-bold">
-                        Computer Science
-                      </h4>
-
+                      <h4 className="text-lg font-bold">Computer Science</h4>
                       <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-semibold text-green-400">
                         Best Fit
                       </span>
@@ -146,10 +115,7 @@ export default function Hero({ activeTab, onTabChange }) {
                   </div>
 
                   <div className="rounded-2xl bg-white/5 p-4">
-                    <p className="text-xs text-white/50">
-                      Skill Readiness
-                    </p>
-
+                    <p className="text-xs text-white/50">Skill Readiness</p>
                     <div className="mt-3 h-3 overflow-hidden rounded-full bg-white/10">
                       <motion.div
                         initial={{ width: 0 }}
@@ -158,10 +124,7 @@ export default function Hero({ activeTab, onTabChange }) {
                         className="h-full rounded-full bg-gradient-to-r from-[#FF6B2B] to-orange-300"
                       />
                     </div>
-
-                    <p className="mt-2 text-sm text-white/70">
-                      78% ready for placements
-                    </p>
+                    <p className="mt-2 text-sm text-white/70">78% ready for placements</p>
                   </div>
                 </div>
               </motion.div>
@@ -180,21 +143,13 @@ export default function Hero({ activeTab, onTabChange }) {
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FF6B2B]/20 text-[#FF6B2B]">
                     ✨
                   </div>
-
                   <div>
-                    <h4 className="font-semibold">
-                      Real Mentors
-                    </h4>
-
-                    <p className="text-xs text-white/50">
-                      Online now
-                    </p>
+                    <h4 className="font-semibold">Real Mentors</h4>
+                    <p className="text-xs text-white/50">Online now</p>
                   </div>
                 </div>
-
                 <div className="mt-5 rounded-2xl bg-white/5 p-4 text-sm leading-6 text-white/75">
-                  “Based on your interests, CSE with AI
-                  specialization matches your profile best.”
+                  "Based on your interests, CSE with AI specialization matches your profile best."
                 </div>
               </motion.div>
 
@@ -208,14 +163,8 @@ export default function Hero({ activeTab, onTabChange }) {
                 }}
                 className="absolute bottom-8 right-6 w-[220px] rounded-[24px] border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-xl"
               >
-                <p className="text-sm text-white/50">
-                  Students Guided
-                </p>
-
-                <h3 className="mt-2 text-4xl font-black text-white">
-                  5K+
-                </h3>
-
+                <p className="text-sm text-white/50">Students Guided</p>
+                <h3 className="mt-2 text-4xl font-black text-white">5K+</h3>
                 <div className="mt-4 flex items-center gap-2">
                   <div className="h-2 flex-1 rounded-full bg-white/10">
                     <motion.div
@@ -225,19 +174,15 @@ export default function Hero({ activeTab, onTabChange }) {
                       className="h-2 rounded-full bg-[#FF6B2B]"
                     />
                   </div>
-
-                  <span className="text-xs text-white/60">
-                    85%
-                  </span>
+                  <span className="text-xs text-white/60">85%</span>
                 </div>
-
                 <p className="mt-3 text-xs leading-5 text-white/60">
-                  Students reported better clarity after
-                  mentorship.
+                  Students reported better clarity after mentorship.
                 </p>
               </motion.div>
             </div>
           </motion.div>
+
         </div>
       </section>
     </div>
