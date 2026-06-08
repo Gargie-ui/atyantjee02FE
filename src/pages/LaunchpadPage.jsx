@@ -402,7 +402,7 @@ function StoriesSection() {
 }
 
 // ─── SECTION 6: Pricing — simple, clear, lowest barrier first ────────────────
-function PricingSection() {
+function PricingSection({ user }) {
   return (
     <motion.section
       id="pricing"
@@ -443,7 +443,21 @@ function PricingSection() {
             <PricingCard key={plan.title} {...plan} />
           ))}
         </div>
-
+        {user?.plan && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() =>
+                window.open(
+                  "https://wa.me/919579040183?text=Hi%2C%20I%20have%20already%20purchased%20a%20plan%20and%20would%20like%20to%20upgrade.%20Please%20guide%20me.",
+                  "_blank"
+               )
+              }
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition"
+            >
+              Upgrade Plan
+            </button>
+          </div>
+        )}
         {/* Why Choose Atyant Section */}
         <div className="mt-20 max-w-4xl mx-auto bg-[#0B0F2E] rounded-[2.5rem] p-8 sm:p-12 text-white relative overflow-hidden shadow-2xl shadow-[#0B0F2E]/20 border border-white/5">
           <div className="absolute right-0 top-0 w-72 h-72 bg-gradient-to-br from-orange-500/10 to-transparent blur-3xl" />
@@ -569,7 +583,7 @@ function FinalCTA() {
 }
 
 // ─── PAGE ──────────────────────────────────────────────────────────────────────
-export default function LaunchpadPage({ activeTab, onTabChange }) {
+export default function LaunchpadPage({ activeTab, onTabChange, user }) {
   return (
     <main>
       {/* 1. Hero — speak their exact situation */}
@@ -582,7 +596,7 @@ export default function LaunchpadPage({ activeTab, onTabChange }) {
       <DecisionEngine />
 
       {/* 5. Pricing — lowest barrier first, integrated early bird */}
-      <PricingSection />
+      <PricingSection user={user} />
       <WhatNobody />
 
       {/* 3. The Gamified Launchpad Bento Grid (Replaces 5 long sections) */}

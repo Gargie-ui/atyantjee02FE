@@ -98,7 +98,7 @@ function AppContent() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.3 }}>
-              <LaunchpadPage activeTab={activeTab} onTabChange={handleTabChange} />
+              <LaunchpadPage activeTab={activeTab} onTabChange={handleTabChange} user={user} />
             </motion.div>
           } />
           <Route path="/college" element={
