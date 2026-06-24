@@ -1,0 +1,396 @@
+import { motion } from 'framer-motion';
+import { CheckCircle2, Star, Sparkles } from 'lucide-react';
+
+// ─── Data ──────────────────────────────────────────────────────────────────────
+
+export const ADMISSION_PROGRAMS = [
+  {
+    id: 'college-clarity',
+    title: 'College Clarity',
+    badge: 'LIMITED TIME OFFER',
+    badgeFloating: false,
+    discount: '33% OFF',
+    price: '999',
+    oldPrice: '1,500',
+    bestFor: 'Students who want quick clarity before CAP rounds.',
+    features: [
+      'Personalized Strategy Session',
+      'Rank, College & Branch Analysis',
+      'Personalized College Shortlist',
+      'CAP Strategy Guidance',
+      'WhatsApp Support',
+    ],
+    bonusLabel: 'Bonus Resources',
+    bonusItems: [
+      'Top Maharashtra Colleges Guide',
+      'Branch Scope Guide',
+      'Common Admission Mistakes',
+    ],
+    cta: 'Get Clarity →',
+    footerNote: 'Quick clarity before your CAP round.',
+    colorTheme: 'default',
+    whatsappText: "Hi, I'm interested in the College Clarity program",
+  },
+  {
+    id: 'admission-success',
+    title: 'Admission Success',
+    badge: '⭐ MOST POPULAR',
+    badgeFloating: true,
+    subtitle: 'Chosen by Students & Parents',
+    discount: '43% OFF',
+    price: '1,999',
+    oldPrice: '3,500',
+    bestFor: 'Students who want support till final admission.',
+    features: [
+      'Everything in College Clarity',
+      'Dedicated Admission Mentor',
+      'Complete CAP & Spot Round Support',
+      'Choice Filling Review',
+      'Unlimited WhatsApp Support',
+      'Final Admission Guidance',
+    ],
+    bonusLabel: 'Career Advantage Pack',
+    bonusItems: [
+      'Resume Templates',
+      'LinkedIn Starter Guide',
+      'Internship Roadmap',
+      'Placement Preparation Roadmap',
+      'Career Opportunities by Branch',
+    ],
+    cta: 'Get Full Support →',
+    footerNote: 'Support till admission. Guidance beyond admission.',
+    colorTheme: 'center',
+    whatsappText: "Hi, I'm interested in the Admission Success program",
+  },
+  {
+    id: 'admission-career-growth',
+    title: 'Admission + Career Growth',
+    badge: '👑 PREMIUM',
+    badgeFloating: true,
+    discount: '20% OFF',
+    price: '3,999',
+    oldPrice: '5,000',
+    bestFor: 'Students & parents who want complete handholding.',
+    features: [
+      'Everything in Admission Success',
+      'Personal 1-on-1 Mentor',
+      'Parent Consultation Session',
+      'Priority Support',
+      'College Joining Guidance',
+    ],
+    bonusLabel: 'Premium Career Accelerator',
+    bonusItems: [
+      'Resume Review & Optimization',
+      'LinkedIn Profile Review',
+      'Personalized Career Roadmap',
+      'Internship Strategy',
+      'Placement Strategy',
+      'Top Recruiters & Highest Package Insights',
+      'Industry & Domain Selection Guidance',
+    ],
+    cta: 'Go Premium →',
+    footerNote: 'From MHT-CET Admission to Career Success.',
+    colorTheme: 'premium',
+    whatsappText: "Hi, I'm interested in the Admission + Career Growth program",
+  },
+];
+
+// ─── Constants ─────────────────────────────────────────────────────────────────
+
+const COLLEGES = [
+  'COEP Pune',
+  'VJTI Mumbai',
+  'SPIT Mumbai',
+  'PICT Pune',
+  'Walchand College of Engineering',
+  'VIT Pune',
+  'PCCOE Pune',
+  'DJSCE Mumbai',
+  'TSEC Mumbai',
+  'VIIT Pune',
+  '+100 Other Colleges Across Maharashtra',
+];
+
+const TOPICS = [
+  'MHT-CET CAP Rounds',
+  'Spot Rounds',
+  'Institute Level Rounds',
+  'College Selection',
+  'Branch Selection',
+  'Internships',
+  'Career Planning',
+];
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+function buildWhatsAppUrl(text) {
+  if (!text) return 'https://wa.me/919579040183';
+  return `https://wa.me/919579040183?text=${encodeURIComponent(text)}`;
+}
+
+// ─── Theme Maps ────────────────────────────────────────────────────────────────
+
+const THEME = {
+  default: {
+    card: 'border border-slate-200 bg-white',
+    checkColor: 'text-[#FF6B2B]',
+    btn: 'bg-[#0B0F2E] text-white hover:bg-[#12183f] transition-colors duration-200',
+  },
+  center: {
+    card: 'border-2 border-[#FF6B2B] bg-white shadow-[0_0_32px_4px_rgba(255,107,43,0.18)] shadow-xl',
+    checkColor: 'text-[#FF6B2B]',
+    btn: 'bg-gradient-to-r from-[#FF6B2B] to-[#ff8a57] text-white transition-colors duration-200',
+  },
+  premium: {
+    card: 'border-2 border-[#6366f1] bg-white shadow-[0_0_24px_4px_rgba(99,102,241,0.15)]',
+    checkColor: 'text-[#6366f1]',
+    btn: 'bg-[#6366f1] text-white hover:bg-[#4f46e5] transition-colors duration-200',
+  },
+};
+
+// ─── Sub-components ────────────────────────────────────────────────────────────
+
+function SectionHeader() {
+  return (
+    <motion.div
+      className="mx-auto max-w-3xl text-center mb-14"
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+      viewport={{ once: true, margin: '-80px' }}
+    >
+      <p className="text-sm font-semibold tracking-[0.22em] uppercase text-[#FF6B2B]">
+        ADMISSION PROGRAMS
+      </p>
+      <h2 className="mt-3 font-black text-3xl sm:text-5xl text-[#0B0F2E]">
+        Get the Guidance Your Admission Deserves
+      </h2>
+      <p className="mt-4 text-base sm:text-lg font-normal text-slate-600 leading-relaxed">
+        One wrong college decision can impact the next 4 years. Get expert guidance before you commit.
+      </p>
+    </motion.div>
+  );
+}
+
+function ProgramCard({ card, index }) {
+  const theme = THEME[card.colorTheme] || THEME.default;
+
+  return (
+    <motion.div
+      className={`relative h-full flex flex-col rounded-[2.2rem] ${theme.card}`}
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut', delay: index * 0.1 }}
+      viewport={{ once: true, margin: '-80px' }}
+      whileHover={{ y: -8, scale: 1.02 }}
+    >
+      {/* Floating badge — absolute, overlaps top edge */}
+      {card.badgeFloating && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-[#FF6B2B] to-[#ff8a57] px-5 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-white shadow-lg z-10">
+          {card.badge}
+        </div>
+      )}
+
+      {/* Inner content — flex col flex-1 so CTA is pushed to bottom */}
+      <div className="p-6 sm:p-8 flex flex-col flex-1">
+
+        {/* Inline badge — only when not floating */}
+        {!card.badgeFloating && (
+          <div className="mb-4 inline-flex">
+            <span className="rounded-full bg-orange-500/10 px-4 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-orange-600">
+              {card.badge}
+            </span>
+          </div>
+        )}
+
+        {/* Discount pill */}
+        <div className="mb-3">
+          <span className="rounded-full bg-orange-500/10 px-3 py-1 text-[10px] font-black text-orange-600">
+            {card.discount}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-2xl font-black leading-tight tracking-tight text-[#0B0F2E]">
+          {card.title}
+        </h3>
+
+        {/* Optional subtitle */}
+        {card.subtitle && (
+          <p className="mt-1 text-sm font-medium text-slate-500">{card.subtitle}</p>
+        )}
+
+        {/* Price row */}
+        <div className="mt-3 flex items-baseline gap-2">
+          <span className="text-4xl font-black text-[#0B0F2E]">₹{card.price}</span>
+          {card.oldPrice && (
+            <span className="text-lg font-bold line-through text-slate-400">₹{card.oldPrice}</span>
+          )}
+        </div>
+
+        {/* Best For block */}
+        <div className="mt-4 rounded-xl bg-slate-50 border border-slate-100 px-4 py-3.5">
+          <span className="block text-[10px] font-black uppercase tracking-wider text-orange-600 mb-1">
+            Best For
+          </span>
+          <p className="text-xs font-medium text-slate-700 leading-relaxed">{card.bestFor}</p>
+        </div>
+
+        {/* Divider */}
+        <div className="mt-5 mb-4 h-px bg-slate-100" />
+
+        {/* Feature list */}
+        <div className="space-y-3">
+          {card.features.map((feature) => (
+            <div key={feature} className="flex items-start gap-2.5">
+              <CheckCircle2 className={`h-4 w-4 shrink-0 mt-0.5 ${theme.checkColor}`} />
+              <span className="text-sm font-medium text-slate-700 leading-snug">{feature}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Bonus section */}
+        {card.bonusItems && card.bonusItems.length > 0 && (
+          <div className="mt-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <p className="text-[10px] font-black uppercase tracking-wider text-amber-700">
+                {card.bonusLabel}
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              {card.bonusItems.map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <Star className="h-3 w-3 shrink-0 text-amber-400 fill-current" />
+                  <span className="text-xs font-medium text-slate-600">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Spacer — pushes CTA to bottom */}
+        <div className="mt-auto" />
+
+        {/* CTA + footer pinned to bottom */}
+        <a
+          href={buildWhatsAppUrl(card.whatsappText)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`mt-6 inline-flex w-full items-center justify-center rounded-full px-5 py-4 text-sm font-black cursor-pointer ${theme.btn}`}
+        >
+          {card.cta}
+        </a>
+
+        {/* Footer note — always rendered to keep button row aligned across all cards */}
+        <p className="mt-3 text-center text-xs font-medium text-slate-500 italic min-h-[1.25rem]">
+          {card.footerNote ?? ''}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function TrustStrip() {
+  return (
+    <motion.div
+      className="mx-auto max-w-5xl mt-16"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+    >
+      {/* Dark card container */}
+      <div className="relative overflow-hidden rounded-[2rem] bg-[#0B0F2E] px-8 py-10 shadow-[0_30px_80px_rgba(11,15,46,0.25)]">
+        {/* Background orbs */}
+        <div className="pointer-events-none absolute -left-10 top-0 h-56 w-56 rounded-full bg-[#FF6B2B]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-10 bottom-0 h-56 w-56 rounded-full bg-indigo-500/10 blur-3xl" />
+
+        <div className="relative z-10 text-center">
+          {/* Eyebrow */}
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#FF6B2B] mb-2">
+            Our Coverage
+          </p>
+          <h3 className="text-xl sm:text-2xl font-black text-white mb-8">
+            🎯 Colleges We Help Students Evaluate
+          </h3>
+
+          <div className="flex flex-wrap justify-center gap-3">
+            {COLLEGES.map((name, i) => (
+              <span
+                key={name}
+                className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-200 hover:scale-105 ${
+                  i === COLLEGES.length - 1
+                    ? 'border border-[#FF6B2B]/60 bg-[#FF6B2B]/15 text-[#FFB38E]'
+                    : 'border border-white/10 bg-white/8 text-white/85 hover:bg-white/15'
+                }`}
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function InfoBanner() {
+  return (
+    <motion.div
+      className="mx-auto max-w-4xl mt-6"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
+    >
+      <div className="relative overflow-hidden rounded-2xl border-2 border-[#FF6B2B]/25 bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-5 shadow-[0_8px_32px_rgba(255,107,43,0.1)]">
+        {/* Left accent bar */}
+        <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl bg-gradient-to-b from-[#FF6B2B] to-[#ff8a57]" />
+
+        <div className="flex flex-wrap items-center gap-3 justify-center pl-2">
+          <span className="text-sm font-black text-[#0B0F2E] flex items-center gap-2">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#FF6B2B] text-white text-xs">✦</span>
+            Guidance available for:
+          </span>
+          {TOPICS.map((topic) => (
+            <span
+              key={topic}
+              className="rounded-full border border-[#FF6B2B]/30 bg-white px-4 py-1.5 text-xs font-bold text-[#FF6B2B] shadow-sm"
+            >
+              {topic}
+            </span>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Root Component ────────────────────────────────────────────────────────────
+
+export default function AdmissionProgramsSection() {
+  return (
+    <section className="font-sans bg-[#f6f7fb] px-4 py-20 sm:px-6 lg:px-8 overflow-x-hidden">
+      <SectionHeader />
+
+      {/* Card grid — items-stretch for equal-height cards */}
+      <div className="mx-auto max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1.1fr_1fr] gap-6 items-stretch">
+        {ADMISSION_PROGRAMS.map((card, index) => (
+          <div
+            key={card.id}
+            className={`
+              ${index === 1 ? 'sm:col-span-2 lg:col-span-1' : ''}
+              ${index === 2 ? 'sm:col-span-2 lg:col-span-1' : ''}
+            `}
+          >
+            <ProgramCard card={card} index={index} />
+          </div>
+        ))}
+      </div>
+
+      <TrustStrip />
+      <InfoBanner />
+    </section>
+  );
+}
